@@ -4,29 +4,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesquisa de Satisfação</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f4f4f4; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input, select, button { width: 100%; padding: 10px; margin-top: 10px; margin-bottom: 20px; }
-        button { background: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
-        h2 { color: #333; }
+        /* RESET E BASE */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f4f6; 
+            color: #1f2937;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* CARD PRINCIPAL */
+        .card { 
+            background: white; 
+            width: 100%;
+            max-width: 550px; 
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* TIPOGRAFIA */
+        h2 { 
+            font-weight: 800; 
+            font-size: 24px; 
+            margin-bottom: 8px; 
+            color: #111827; 
+            letter-spacing: -0.025em;
+        }
+        p.subtitulo {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* FORMULÁRIO */
+        label { 
+            display: block; 
+            font-weight: 600; 
+            margin-bottom: 8px; 
+            margin-top: 24px; 
+            color: #374151;
+            font-size: 15px;
+        }
+
+        input, select { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 1px solid #d1d5db; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            transition: all 0.2s;
+            background-color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* BOTÃO */
+        button { 
+            width: 100%; 
+            background-color: #4f46e5; 
+            color: white; 
+            padding: 14px; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 30px;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: #4338ca; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+
+        /* MENSAGEM SUCESSO */
+        .sucesso-box {
+            text-align: center;
+            padding: 40px 0;
+        }
+        .icon-check {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
     </style>
 </head>
 <body>
 
 <div class="card" id="app">
-    <h2 id="titulo">Carregando pesquisa...</h2>
+    <h2 id="titulo">Carregando...</h2>
+    <p class="subtitulo" id="subtitulo">Aguarde um momento</p>
     <div id="formulario"></div>
 </div>
 
 <script>
-    // 1. CONFIGURAÇÃO (Coloque suas chaves aqui)
+    // 1. CONFIGURAÇÃO SUPABASE
     const SUPABASE_URL = 'https://ivhdtulsakukuuobkfhd.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aGR0dWxzYWt1a3V1b2JrZmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzY5ODksImV4cCI6MjA4NTcxMjk4OX0.6r662VLUy8kbezVNFz-LBBY_-dANAq-zV5BOJmhQe-4';
-    const supabase = showConfirm = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // CORREÇÃO: Inicialização correta do cliente
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 2. PEGAR ID DA URL (ex: meusanuncio.com/pesquisa.html?id=123-abc)
+    // 2. PEGAR ID DA URL
     const params = new URLSearchParams(window.location.search);
     const quizId = params.get('id');
 
@@ -34,17 +127,29 @@
     let respostas = {};
 
     async function carregarQuiz() {
-        if(!quizId) return document.getElementById('titulo').innerText = "Link inválido.";
+        if(!quizId) {
+            document.getElementById('titulo').innerText = "Link inválido";
+            document.getElementById('subtitulo').innerText = "Verifique a URL e tente novamente.";
+            return;
+        }
 
-        const { data, error } = await supabase
+        // Busca os dados do Quiz
+        const { data, error } = await _supabase
             .from('quiz_personas')
             .select('nome_produto, perguntas_geradas')
             .eq('id', quizId)
             .single();
 
-        if(error || !data) return document.getElementById('titulo').innerText = "Pesquisa não encontrada.";
+        // ERRO COMUM: Se der erro aqui, é falta de permissão SQL (RLS)
+        if(error || !data) {
+            console.error(error);
+            document.getElementById('titulo').innerText = "Pesquisa indisponível";
+            document.getElementById('subtitulo').innerText = "O formulário não foi encontrado ou foi desativado.";
+            return;
+        }
 
-        document.getElementById('titulo').innerText = `Pesquisa sobre: ${data.nome_produto}`;
+        document.getElementById('titulo').innerText = data.nome_produto;
+        document.getElementById('subtitulo').innerText = "Responda as perguntas abaixo para nos ajudar.";
         perguntas = data.perguntas_geradas;
         renderizarFormulario();
     }
@@ -53,20 +158,24 @@
         const formDiv = document.getElementById('formulario');
         let html = '';
 
-        perguntas.forEach((p, index) => {
-            html += `<label><strong>${p.texto}</strong></label>`;
+        perguntas.forEach((p) => {
+            html += `<div>`;
+            html += `<label>${p.texto}</label>`;
             
             if (p.tipo === 'multi') {
                 html += `<select onchange="salvarResposta('${p.id}', this.value)">
-                            <option value="">Selecione...</option>
+                            <option value="">Selecione uma opção...</option>
                             ${p.opcoes.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
                          </select>`;
+            } else if (p.tipo === 'number') {
+                html += `<input type="number" min="0" max="10" onchange="salvarResposta('${p.id}', this.value)" placeholder="Digite um número">`;
             } else {
-                html += `<input type="text" onchange="salvarResposta('${p.id}', this.value)" placeholder="Sua resposta">`;
+                html += `<input type="text" onchange="salvarResposta('${p.id}', this.value)" placeholder="Sua resposta...">`;
             }
+            html += `</div>`;
         });
 
-        html += `<button onclick="enviar()">Enviar Respostas</button>`;
+        html += `<button id="btnEnviar" onclick="enviar()">Enviar Respostas</button>`;
         formDiv.innerHTML = html;
     }
 
@@ -75,20 +184,33 @@
     }
 
     window.enviar = async () => {
-        // Validação simples
+        const btn = document.getElementById('btnEnviar');
+        
+        // Validação
         if(Object.keys(respostas).length < perguntas.length) {
-            return alert("Por favor, responda todas as perguntas.");
+            return alert("Por favor, responda todas as perguntas para continuar.");
         }
 
-        const { error } = await supabase.from('quiz_responses').insert({
+        btn.innerText = "Enviando...";
+        btn.disabled = true;
+
+        const { error } = await _supabase.from('quiz_responses').insert({
             quiz_id: quizId,
             dados_resposta: respostas
         });
 
         if(error) {
             alert("Erro ao enviar. Tente novamente.");
+            btn.innerText = "Enviar Respostas";
+            btn.disabled = false;
         } else {
-            document.getElementById('app').innerHTML = "<h2>Obrigado! ✅</h2><p>Sua opinião ajuda muito.</p>";
+            document.getElementById('app').innerHTML = `
+                <div class="sucesso-box">
+                    <span class="icon-check">🎉</span>
+                    <h2>Obrigado!</h2>
+                    <p class="subtitulo">Sua opinião foi registrada com sucesso.</p>
+                </div>
+            `;
         }
     }
 
