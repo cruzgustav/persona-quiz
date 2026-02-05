@@ -2,92 +2,319 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sorteio Oficial</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background: #db2777; margin: 0; padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #831843; }
-        .card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; }
+        /* --- RESET & BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
-        /* TICKET DOURADO */
-        .ticket {
-            background: linear-gradient(135deg, #fcd34d 0%, #d97706 100%);
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f1f5f9; /* Cinza muito suave */
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 20px;
-            border-radius: 12px;
-            color: white;
-            text-shadow: 0 2px 0 rgba(0,0,0,0.1);
-            margin-top: 20px;
-            position: relative;
-            border: 2px dashed rgba(255,255,255,0.5);
         }
-        .ticket h3 { margin: 0; font-size: 14px; text-transform: uppercase; opacity: 0.9; }
-        .ticket .number { font-size: 48px; font-weight: 900; margin: 10px 0; letter-spacing: 2px; }
+
+        /* --- CARD PRINCIPAL --- */
+        .card { 
+            background: white; 
+            width: 100%;
+            max-width: 420px; 
+            border-radius: 24px; 
+            box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- HERO IMAGE (FOTO DO PRODUTO) --- */
+        .hero-section {
+            width: 100%;
+            height: 220px;
+            background-color: #e2e8f0;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+            height: 80px;
+        }
+
+        /* --- CONTEÚDO --- */
+        .content { padding: 24px 28px; }
+
+        /* HEADER INFO */
+        .store-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eff6ff;
+            color: #4f46e5;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h1 { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: #0f172a; 
+            line-height: 1.2; 
+            margin-bottom: 8px;
+        }
         
-        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #fbcfe8; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; background: #db2777; color: white; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 18px; cursor: pointer; }
-        button:disabled { opacity: 0.7; }
+        p.subtitle { 
+            color: #64748b; 
+            font-size: 15px; 
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .meta-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        /* --- FORMULÁRIO --- */
+        .input-group { margin-bottom: 16px; }
         
+        label { 
+            display: block; 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: #334155; 
+            margin-bottom: 6px; 
+            text-transform: uppercase;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            border: 2px solid #e2e8f0; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        input:focus { border-color: #4f46e5; background: #eef2ff; }
+
+        button { 
+            width: 100%; 
+            background: #4f46e5; 
+            color: white; 
+            padding: 18px; 
+            border: none; 
+            border-radius: 14px; 
+            font-weight: 700; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.98); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* --- TICKET DOURADO (RESULTADO) --- */
+        .ticket-wrapper {
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+            border: 1px solid #FCD34D;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(217, 119, 6, 0.15);
+        }
+        /* Efeito de rasgo lateral */
+        .ticket-wrapper::before, .ticket-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: white; /* Cor do fundo da página */
+            border-radius: 50%;
+        }
+        .ticket-wrapper::before { left: -10px; box-shadow: inset -2px 0 3px rgba(0,0,0,0.05); }
+        .ticket-wrapper::after { right: -10px; box-shadow: inset 2px 0 3px rgba(0,0,0,0.05); }
+
+        .ticket-label { color: #d97706; font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+        .ticket-number { font-size: 42px; font-weight: 900; color: #b45309; letter-spacing: 4px; font-variant-numeric: tabular-nums; }
+        .ticket-sub { color: #92400e; font-size: 13px; margin-top: 8px; }
+
         .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Loader */
+        .loader { width: 24px; height: 24px; border: 3px solid #ffffff; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
 
 <div class="card" id="app">
-    <h1 style="margin-top:0">🎉 Participe do Sorteio</h1>
-    <p id="desc" style="color:#666">Carregando...</p>
-    
-    <div id="form">
-        <input type="text" id="nome" placeholder="Seu Nome Completo">
-        <input type="tel" id="zap" placeholder="Seu WhatsApp (com DDD)">
-        <button onclick="participar()" id="btn">Gerar Ticket da Sorte</button>
+    <div class="hero-section" id="heroSection">
+        <img id="heroImg" class="hero-img" src="" alt="Prêmio">
+        <div class="hero-overlay"></div>
     </div>
 
-    <div id="result" class="hidden">
-        <p>Parabéns! Você está participando.</p>
-        <div class="ticket">
-            <h3>Seu Número da Sorte</h3>
-            <div class="number" id="ticketNum">----</div>
-            <p style="font-size:12px; margin:0">Tire um print e guarde!</p>
+    <div class="content">
+        <div class="store-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span id="storeName">Carregando...</span>
+        </div>
+        
+        <h1 id="titulo">...</h1>
+        <p class="subtitle" id="premio">...</p>
+        
+        <div class="meta-info" id="metaInfo">
+            <span id="dataSorteio">📅 Data: Em breve</span>
+        </div>
+
+        <div id="formContainer">
+            <div class="input-group">
+                <label>Seu Nome Completo</label>
+                <input type="text" id="nome" placeholder="Ex: João Silva">
+            </div>
+            
+            <div class="input-group">
+                <label>WhatsApp (Com DDD)</label>
+                <input type="tel" id="zap" placeholder="(00) 00000-0000" maxlength="15" onkeyup="mascaraZap(this)">
+            </div>
+
+            <button onclick="participar()" id="btnParticipar">Gerar Meu Ticket</button>
+        </div>
+
+        <div id="resultContainer" class="hidden">
+            <div class="ticket-wrapper">
+                <div class="ticket-label">TICKET DA SORTE</div>
+                <div class="ticket-number" id="ticketNum">----</div>
+                <p class="ticket-sub">Tire um print e poste nos stories!</p>
+            </div>
+            <p style="text-align: center; color: #64748b; font-size: 13px; margin-top: 20px;">
+                Boa sorte! Entraremos em contato pelo WhatsApp se você ganhar.
+            </p>
         </div>
     </div>
 </div>
 
 <script>
+    // 1. CONFIGURAÇÃO (Suas Chaves)
     const SUPABASE_URL = 'https://ivhdtulsakukuuobkfhd.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aGR0dWxzYWt1a3V1b2JrZmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzY5ODksImV4cCI6MjA4NTcxMjk4OX0.6r662VLUy8kbezVNFz-LBBY_-dANAq-zV5BOJmhQe-4';
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
 
+    // MASCARA WHATSAPP (Visual)
+    function mascaraZap(o) {
+        let v = o.value.replace(/\D/g,"");
+        v = v.replace(/^(\d{2})(\d)/g,"($1) $2");
+        v = v.replace(/(\d)(\d{4})$/,"$1-$2");
+        o.value = v;
+    }
+
     async function init() {
-        const { data } = await _supabase.from('campaigns').select('*').eq('id', id).single();
-        if(data) document.getElementById('desc').innerText = `Concorra a: ${data.descricao}`;
+        if(!id) return document.body.innerHTML = "<h3 style='text-align:center'>Link inválido</h3>";
+
+        const { data, error } = await _supabase
+            .from('campaigns')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if(error || !data) return document.body.innerHTML = "<h3 style='text-align:center'>Sorteio não encontrado</h3>";
+
+        // Preenche os dados
+        document.getElementById('storeName').innerText = data.nome_dono || 'Loja Parceira';
+        document.getElementById('titulo').innerText = data.titulo;
+        document.getElementById('premio').innerText = `Prêmio: ${data.descricao}`;
+        
+        if(data.data_prevista) {
+            document.getElementById('dataSorteio').innerText = `📅 Sorteio: ${data.data_prevista}`;
+        }
+
+        // Trata imagem
+        if(data.imagem_url) {
+            document.getElementById('heroImg').src = data.imagem_url;
+        } else {
+            // Se não tiver imagem, remove a área hero
+            document.getElementById('heroSection').style.display = 'none';
+        }
     }
 
     async function participar() {
         const nome = document.getElementById('nome').value;
         const zap = document.getElementById('zap').value;
-        if(!nome || !zap) return alert("Preencha tudo!");
+        const btn = document.getElementById('btnParticipar');
 
-        document.getElementById('btn').innerText = "Gerando...";
+        if(!nome || zap.length < 10) return alert("Por favor, preencha seu nome e WhatsApp corretamente.");
+
+        // Loading state
+        btn.innerHTML = '<span class="loader"></span>';
+        btn.disabled = true;
         
-        // Gera número aleatório entre 1000 e 9999
+        // Gera número aleatório (Simulação de Ticket)
         const ticket = Math.floor(1000 + Math.random() * 9000);
 
         const { error } = await _supabase.from('campaign_leads').insert({
-            campaign_id: id, nome, whatsapp: zap, numero_ticket: ticket
+            campaign_id: id,
+            nome: nome,
+            whatsapp: zap,
+            numero_ticket: ticket
         });
 
         if(!error) {
-            document.getElementById('form').classList.add('hidden');
-            document.getElementById('result').classList.remove('hidden');
+            // Sucesso
+            document.getElementById('formContainer').classList.add('hidden');
+            const res = document.getElementById('resultContainer');
+            res.classList.remove('hidden');
+            res.classList.add('fade-in');
             document.getElementById('ticketNum').innerText = `#${ticket}`;
+            
+            // Scroll suave para o ticket
+            res.scrollIntoView({ behavior: 'smooth' });
         } else {
-            alert("Erro ao participar.");
+            alert("Erro ao participar. Tente novamente.");
+            btn.innerHTML = 'Gerar Meu Ticket';
+            btn.disabled = false;
         }
     }
+
     init();
 </script>
 
