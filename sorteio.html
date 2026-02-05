@@ -13,7 +13,7 @@
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #f1f5f9; /* Cinza muito suave */
+            background-color: #f1f5f9; /* Cinza Gelo */
             color: #1e293b;
             display: flex;
             justify-content: center;
@@ -36,10 +36,11 @@
         /* --- HERO IMAGE (FOTO DO PRODUTO) --- */
         .hero-section {
             width: 100%;
-            height: 220px;
+            height: 250px; /* Mais alto para destacar */
             background-color: #e2e8f0;
             position: relative;
             overflow: hidden;
+            display: none; /* Começa oculto, só aparece se a imagem carregar */
         }
         .hero-img {
             width: 100%;
@@ -47,37 +48,38 @@
             object-fit: cover;
             transition: transform 0.5s;
         }
+        /* Gradiente suave na base da foto */
         .hero-overlay {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
             height: 80px;
+            background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
         }
 
         /* --- CONTEÚDO --- */
-        .content { padding: 24px 28px; }
+        .content { padding: 32px 28px; }
 
         /* HEADER INFO */
         .store-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #eff6ff;
-            color: #4f46e5;
+            background: #e0e7ff;
+            color: #4338ca;
             padding: 6px 12px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            margin-bottom: 12px;
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 16px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         h1 { 
-            font-size: 24px; 
-            font-weight: 800; 
+            font-size: 26px; 
+            font-weight: 900; 
             color: #0f172a; 
             line-height: 1.2; 
             margin-bottom: 8px;
@@ -96,9 +98,11 @@
             gap: 8px;
             font-size: 13px;
             color: #64748b;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
             margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e2e8f0;
+            border: 1px solid #e2e8f0;
         }
 
         /* --- FORMULÁRIO --- */
@@ -109,7 +113,7 @@
             font-size: 12px; 
             font-weight: 700; 
             color: #334155; 
-            margin-bottom: 6px; 
+            margin-bottom: 8px; 
             text-transform: uppercase;
         }
 
@@ -123,35 +127,39 @@
             outline: none;
             transition: all 0.2s;
             font-family: 'Inter', sans-serif;
+            background: #fff;
         }
         input:focus { border-color: #4f46e5; background: #eef2ff; }
+        input::placeholder { color: #cbd5e1; }
 
         button { 
             width: 100%; 
-            background: #4f46e5; 
+            background: #4f46e5; /* Indigo Premium */
             color: white; 
             padding: 18px; 
             border: none; 
             border-radius: 14px; 
-            font-weight: 700; 
+            font-weight: 800; 
             font-size: 16px; 
             cursor: pointer; 
             margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
+            transition: transform 0.1s, background-color 0.2s;
         }
+        button:hover { background-color: #4338ca; }
         button:active { transform: scale(0.98); }
-        button:disabled { opacity: 0.7; cursor: not-allowed; }
+        button:disabled { opacity: 0.7; cursor: not-allowed; box-shadow: none; }
 
         /* --- TICKET DOURADO (RESULTADO) --- */
         .ticket-wrapper {
             background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
             border: 1px solid #FCD34D;
             border-radius: 16px;
-            padding: 24px;
+            padding: 30px 20px;
             text-align: center;
             position: relative;
-            box-shadow: 0 10px 20px rgba(217, 119, 6, 0.15);
+            box-shadow: 0 10px 25px rgba(217, 119, 6, 0.2);
+            margin-top: 10px;
         }
         /* Efeito de rasgo lateral */
         .ticket-wrapper::before, .ticket-wrapper::after {
@@ -159,24 +167,24 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            background: white; /* Cor do fundo da página */
+            width: 24px;
+            height: 24px;
+            background: white; /* Cor do fundo do card */
             border-radius: 50%;
         }
-        .ticket-wrapper::before { left: -10px; box-shadow: inset -2px 0 3px rgba(0,0,0,0.05); }
-        .ticket-wrapper::after { right: -10px; box-shadow: inset 2px 0 3px rgba(0,0,0,0.05); }
+        .ticket-wrapper::before { left: -12px; box-shadow: inset -2px 0 3px rgba(0,0,0,0.05); }
+        .ticket-wrapper::after { right: -12px; box-shadow: inset 2px 0 3px rgba(0,0,0,0.05); }
 
-        .ticket-label { color: #d97706; font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-        .ticket-number { font-size: 42px; font-weight: 900; color: #b45309; letter-spacing: 4px; font-variant-numeric: tabular-nums; }
-        .ticket-sub { color: #92400e; font-size: 13px; margin-top: 8px; }
+        .ticket-label { color: #d97706; font-size: 11px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+        .ticket-number { font-size: 48px; font-weight: 900; color: #b45309; letter-spacing: 4px; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 8px; }
+        .ticket-sub { color: #92400e; font-size: 13px; font-weight: 500; }
 
         .hidden { display: none; }
-        .fade-in { animation: fadeIn 0.5s ease forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Loader */
-        .loader { width: 24px; height: 24px; border: 3px solid #ffffff; border-bottom-color: transparent; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
+        .loader { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-bottom-color: #ffffff; border-radius: 50%; display: inline-block; animation: rotation 1s linear infinite; }
         @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     </style>
@@ -191,7 +199,7 @@
 
     <div class="content">
         <div class="store-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span id="storeName">Carregando...</span>
         </div>
         
@@ -199,31 +207,31 @@
         <p class="subtitle" id="premio">...</p>
         
         <div class="meta-info" id="metaInfo">
-            <span id="dataSorteio">📅 Data: Em breve</span>
+            <span id="dataSorteio">📅 Data a definir</span>
         </div>
 
         <div id="formContainer">
             <div class="input-group">
                 <label>Seu Nome Completo</label>
-                <input type="text" id="nome" placeholder="Ex: João Silva">
+                <input type="text" id="nome" placeholder="Digite seu nome">
             </div>
             
             <div class="input-group">
-                <label>WhatsApp (Com DDD)</label>
+                <label>Seu WhatsApp</label>
                 <input type="tel" id="zap" placeholder="(00) 00000-0000" maxlength="15" onkeyup="mascaraZap(this)">
             </div>
 
-            <button onclick="participar()" id="btnParticipar">Gerar Meu Ticket</button>
+            <button onclick="participar()" id="btnParticipar">Quero Participar</button>
         </div>
 
         <div id="resultContainer" class="hidden">
             <div class="ticket-wrapper">
-                <div class="ticket-label">TICKET DA SORTE</div>
+                <div class="ticket-label">SEU NÚMERO DA SORTE</div>
                 <div class="ticket-number" id="ticketNum">----</div>
-                <p class="ticket-sub">Tire um print e poste nos stories!</p>
+                <p class="ticket-sub">📸 Tire um print e guarde!</p>
             </div>
-            <p style="text-align: center; color: #64748b; font-size: 13px; margin-top: 20px;">
-                Boa sorte! Entraremos em contato pelo WhatsApp se você ganhar.
+            <p style="text-align: center; color: #64748b; font-size: 13px; margin-top: 24px; line-height: 1.5;">
+                Parabéns! Você já está concorrendo.<br>Entraremos em contato pelo WhatsApp.
             </p>
         </div>
     </div>
@@ -249,7 +257,7 @@
     }
 
     async function init() {
-        if(!id) return document.body.innerHTML = "<h3 style='text-align:center'>Link inválido</h3>";
+        if(!id) return document.body.innerHTML = "<h3 style='text-align:center; padding:20px'>Link inválido</h3>";
 
         const { data, error } = await _supabase
             .from('campaigns')
@@ -257,23 +265,37 @@
             .eq('id', id)
             .single();
 
-        if(error || !data) return document.body.innerHTML = "<h3 style='text-align:center'>Sorteio não encontrado</h3>";
+        if(error || !data) return document.body.innerHTML = "<h3 style='text-align:center; padding:20px'>Sorteio não encontrado ou encerrado.</h3>";
 
         // Preenche os dados
-        document.getElementById('storeName').innerText = data.nome_dono || 'Loja Parceira';
+        document.getElementById('storeName').innerText = `Oferecido por: ${data.nome_dono || 'Nossa Loja'}`;
         document.getElementById('titulo').innerText = data.titulo;
-        document.getElementById('premio').innerText = `Prêmio: ${data.descricao}`;
+        document.getElementById('premio').innerText = data.descricao; // Nome do prêmio
         
         if(data.data_prevista) {
-            document.getElementById('dataSorteio').innerText = `📅 Sorteio: ${data.data_prevista}`;
+            document.getElementById('dataSorteio').innerText = `📅 Sorteio Previsto: ${data.data_prevista}`;
         }
 
-        // Trata imagem
-        if(data.imagem_url) {
-            document.getElementById('heroImg').src = data.imagem_url;
+        // --- LÓGICA DE IMAGEM BLINDADA ---
+        const imgEl = document.getElementById('heroImg');
+        const heroSection = document.getElementById('heroSection');
+
+        if(data.imagem_url && data.imagem_url.length > 5) {
+            // Define o src
+            imgEl.src = data.imagem_url;
+            
+            // Só mostra o container quando a imagem carregar com sucesso
+            imgEl.onload = function() {
+                heroSection.style.display = 'block';
+            };
+
+            // Se der erro (403, 404), mantém escondido (display: none padrão do CSS)
+            imgEl.onerror = function() {
+                console.log("Imagem falhou ao carregar (Pode ser permissão do Bucket).");
+                heroSection.style.display = 'none';
+            };
         } else {
-            // Se não tiver imagem, remove a área hero
-            document.getElementById('heroSection').style.display = 'none';
+            heroSection.style.display = 'none';
         }
     }
 
@@ -282,13 +304,14 @@
         const zap = document.getElementById('zap').value;
         const btn = document.getElementById('btnParticipar');
 
-        if(!nome || zap.length < 10) return alert("Por favor, preencha seu nome e WhatsApp corretamente.");
+        // Validação simples
+        if(!nome || zap.length < 13) return alert("Por favor, preencha seu nome e WhatsApp corretamente.");
 
         // Loading state
         btn.innerHTML = '<span class="loader"></span>';
         btn.disabled = true;
         
-        // Gera número aleatório (Simulação de Ticket)
+        // Gera número aleatório (Ticket)
         const ticket = Math.floor(1000 + Math.random() * 9000);
 
         const { error } = await _supabase.from('campaign_leads').insert({
@@ -299,18 +322,18 @@
         });
 
         if(!error) {
-            // Sucesso
+            // Sucesso - Troca a tela
             document.getElementById('formContainer').classList.add('hidden');
             const res = document.getElementById('resultContainer');
             res.classList.remove('hidden');
             res.classList.add('fade-in');
             document.getElementById('ticketNum').innerText = `#${ticket}`;
             
-            // Scroll suave para o ticket
-            res.scrollIntoView({ behavior: 'smooth' });
+            // Confete simples (emoji) no título
+            document.title = "🎉 Ticket Gerado!";
         } else {
-            alert("Erro ao participar. Tente novamente.");
-            btn.innerHTML = 'Gerar Meu Ticket';
+            alert("Erro ao participar. Verifique sua conexão.");
+            btn.innerHTML = 'Quero Participar';
             btn.disabled = false;
         }
     }
