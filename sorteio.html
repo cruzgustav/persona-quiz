@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteio Oficial</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #db2777; margin: 0; padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center; color: #831843; }
+        .card { background: white; padding: 30px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; }
+        
+        /* TICKET DOURADO */
+        .ticket {
+            background: linear-gradient(135deg, #fcd34d 0%, #d97706 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            text-shadow: 0 2px 0 rgba(0,0,0,0.1);
+            margin-top: 20px;
+            position: relative;
+            border: 2px dashed rgba(255,255,255,0.5);
+        }
+        .ticket h3 { margin: 0; font-size: 14px; text-transform: uppercase; opacity: 0.9; }
+        .ticket .number { font-size: 48px; font-weight: 900; margin: 10px 0; letter-spacing: 2px; }
+        
+        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #fbcfe8; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; background: #db2777; color: white; padding: 16px; border: none; border-radius: 10px; font-weight: 700; font-size: 18px; cursor: pointer; }
+        button:disabled { opacity: 0.7; }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="app">
+    <h1 style="margin-top:0">🎉 Participe do Sorteio</h1>
+    <p id="desc" style="color:#666">Carregando...</p>
+    
+    <div id="form">
+        <input type="text" id="nome" placeholder="Seu Nome Completo">
+        <input type="tel" id="zap" placeholder="Seu WhatsApp (com DDD)">
+        <button onclick="participar()" id="btn">Gerar Ticket da Sorte</button>
+    </div>
+
+    <div id="result" class="hidden">
+        <p>Parabéns! Você está participando.</p>
+        <div class="ticket">
+            <h3>Seu Número da Sorte</h3>
+            <div class="number" id="ticketNum">----</div>
+            <p style="font-size:12px; margin:0">Tire um print e guarde!</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://ivhdtulsakukuuobkfhd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aGR0dWxzYWt1a3V1b2JrZmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzY5ODksImV4cCI6MjA4NTcxMjk4OX0.6r662VLUy8kbezVNFz-LBBY_-dANAq-zV5BOJmhQe-4';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    async function init() {
+        const { data } = await _supabase.from('campaigns').select('*').eq('id', id).single();
+        if(data) document.getElementById('desc').innerText = `Concorra a: ${data.descricao}`;
+    }
+
+    async function participar() {
+        const nome = document.getElementById('nome').value;
+        const zap = document.getElementById('zap').value;
+        if(!nome || !zap) return alert("Preencha tudo!");
+
+        document.getElementById('btn').innerText = "Gerando...";
+        
+        // Gera número aleatório entre 1000 e 9999
+        const ticket = Math.floor(1000 + Math.random() * 9000);
+
+        const { error } = await _supabase.from('campaign_leads').insert({
+            campaign_id: id, nome, whatsapp: zap, numero_ticket: ticket
+        });
+
+        if(!error) {
+            document.getElementById('form').classList.add('hidden');
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('ticketNum').innerText = `#${ticket}`;
+        } else {
+            alert("Erro ao participar.");
+        }
+    }
+    init();
+</script>
+
+</body>
+</html>
