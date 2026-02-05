@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); text-align: center; }
+        h1 { font-size: 22px; color: #111827; margin-bottom: 10px; }
+        p { color: #6b7280; margin-bottom: 30px; }
+        .btn { display: block; width: 100%; padding: 16px; margin-bottom: 12px; border-radius: 12px; font-weight: 600; font-size: 16px; text-decoration: none; transition: transform 0.1s; cursor: pointer; border: none; }
+        .btn-primary { background: #25D366; color: white; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2); }
+        .btn-outline { background: white; border: 2px solid #e5e7eb; color: #374151; }
+        .btn:active { transform: scale(0.98); }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #25D366; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="card" id="app">
+    <div class="loader"></div>
+    <p style="margin-top: 15px;">Iniciando conversa...</p>
+</div>
+
+<script>
+    // 1. Configure suas chaves
+    const SUPABASE_URL = 'https://ivhdtulsakukuuobkfhd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aGR0dWxzYWt1a3V1b2JrZmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzY5ODksImV4cCI6MjA4NTcxMjk4OX0.6r662VLUy8kbezVNFz-LBBY_-dANAq-zV5BOJmhQe-4';
+    
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const params = new URLSearchParams(window.location.search);
+    const linkId = params.get('id');
+
+    async function init() {
+        if(!linkId) return document.body.innerHTML = "Link inválido";
+
+        // Busca configuração do Link
+        const { data: link, error } = await _supabase
+            .from('smart_links')
+            .select('*')
+            .eq('id', linkId)
+            .single();
+
+        if(error || !link) return document.body.innerHTML = "Link não encontrado";
+
+        // Registra View (Opcional, mas legal pra métrica)
+        _supabase.from('smart_links').update({ views_count: link.views_count + 1 }).eq('id', linkId).then();
+
+        // LÓGICA DE DECISÃO
+        if(link.modo_triagem === false) {
+            // MODO SIMPLES: Redireciona direto
+            registrarClique(linkId, 'Redirecionamento Direto');
+            window.location.href = `https://wa.me/${link.whatsapp_num}`;
+        } else {
+            // MODO INTELIGENTE: Mostra botões
+            renderizarBotoes(link);
+        }
+    }
+
+    function renderizarBotoes(link) {
+        const app = document.getElementById('app');
+        let html = `
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="60" style="margin-bottom:15px">
+            <h1>Olá! Como podemos ajudar?</h1>
+            <p>Selecione uma opção para iniciar o atendimento:</p>
+        `;
+
+        link.opcoes_triagem.forEach(op => {
+            html += `<button class="btn btn-outline" onclick="escolher('${op.label}', '${op.msg}', '${link.whatsapp_num}')">${op.label}</button>`;
+        });
+
+        app.innerHTML = html;
+    }
+
+    window.escolher = async (label, msg, num) => {
+        // Mostra loading no botão
+        const app = document.getElementById('app');
+        app.innerHTML = `<div class="loader"></div><p>Abrindo WhatsApp...</p>`;
+
+        // Salva a métrica no Supabase
+        await registrarClique(linkId, label);
+
+        // Redireciona com mensagem preenchida
+        const texto = encodeURIComponent(msg);
+        window.location.href = `https://wa.me/${num}?text=${texto}`;
+    }
+
+    async function registrarClique(linkId, label) {
+        await _supabase.from('link_clicks').insert({
+            link_id: linkId,
+            opcao_escolhida: label
+        });
+    }
+
+    init();
+</script>
+
+</body>
+</html>
