@@ -2,168 +2,221 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pesquisa Rápida</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
-        /* RESET E BASE */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* --- ESTILOS GERAIS --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc; /* Cinza azulado muito leve */
+            background-color: #f0f4f8; 
             color: #1e293b;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            overflow: hidden; /* Evita scroll na página inteira */
         }
 
-        /* CARD PRINCIPAL */
+        /* BARRA DE PROGRESSO */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            z-index: 10;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #4f46e5;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* CARD CENTRAL */
         .card { 
-            background: white; 
             width: 100%;
             max-width: 500px; 
-            padding: 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            border: 1px solid #e2e8f0;
+            background: transparent;
         }
 
-        /* HEADER */
-        h2 { 
-            font-weight: 800; 
-            font-size: 26px; 
-            margin-bottom: 8px; 
-            color: #0f172a; 
-            letter-spacing: -0.03em;
-            line-height: 1.2;
+        /* ANIMAÇÕES */
+        .fade-in-up {
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
-        p.subtitulo {
-            color: #64748b;
-            margin-bottom: 32px;
-            font-size: 15px;
-            line-height: 1.5;
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* PERGUNTAS */
-        .campo-box {
-            margin-bottom: 24px;
-        }
-
-        label { 
-            display: block; 
-            font-weight: 600; 
-            margin-bottom: 8px; 
-            color: #334155;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* INPUTS E SELECTS */
-        input, select { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border: 2px solid #e2e8f0; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            transition: all 0.2s;
-            background-color: #fff;
-            color: #0f172a;
-            font-family: 'Inter', sans-serif;
-            appearance: none; /* Remove estilo padrão do browser */
-        }
-
-        /* Ícone de seta customizado para o Select */
-        .select-wrapper {
-            position: relative;
-        }
-        .select-wrapper::after {
-            content: '▼';
+        /* TIPOGRAFIA */
+        .step-count {
+            color: #4f46e5;
+            font-weight: 800;
             font-size: 12px;
-            color: #64748b;
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #4f46e5; /* Cor Primária */
-            background-color: #eef2ff;
-        }
-
-        /* BOTÃO */
-        button { 
-            width: 100%; 
-            background-color: #4f46e5; 
-            color: white; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 12px; 
-            font-weight: 700; 
-            font-size: 16px; 
-            cursor: pointer; 
-            margin-top: 20px;
-            transition: transform 0.1s, background-color 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
-        }
-        button:hover { background-color: #4338ca; transform: translateY(-1px); }
-        button:active { transform: scale(0.98); }
-        button:disabled { background-color: #cbd5e1; cursor: not-allowed; transform: none; box-shadow: none; }
-
-        /* MENSAGEM SUCESSO */
-        .sucesso-box {
-            text-align: center;
-            padding: 40px 0;
-            animation: fadeIn 0.5s ease;
-        }
-        .icon-check {
-            font-size: 56px;
-            margin-bottom: 16px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
             display: block;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        h2 { 
+            font-weight: 900; 
+            font-size: 28px; 
+            margin-bottom: 32px; 
+            color: #0f172a; 
+            line-height: 1.2;
         }
+
+        /* INPUTS DE TEXTO E NÚMERO */
+        .input-group input {
+            width: 100%;
+            padding: 16px 0;
+            font-size: 24px;
+            border: none;
+            border-bottom: 2px solid #cbd5e1;
+            background: transparent;
+            color: #0f172a;
+            border-radius: 0;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus {
+            border-bottom-color: #4f46e5;
+        }
+        .input-group input::placeholder {
+            color: #cbd5e1;
+        }
+
+        /* BOTÕES DE OPÇÃO (Múltipla Escolha) */
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 18px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #334155;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        }
+
+        .option-btn:hover, .option-btn:active {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+            color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.1);
+        }
+
+        .option-key {
+            font-size: 12px;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        /* BOTÃO CONTINUAR (Para texto) */
+        .btn-next {
+            background-color: #4f46e5;
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 30px;
+            float: right;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        .btn-next:hover { background-color: #4338ca; }
+        .btn-next:active { transform: scale(0.95); }
+
+        /* TELA FINAL */
+        .success-screen {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .icon-check { font-size: 64px; margin-bottom: 16px; display: block; }
+        .success-screen h2 { margin-bottom: 10px; }
+        .success-screen p { color: #64748b; font-size: 16px; }
+
+        /* LOADING */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
 
-<div class="card" id="app">
-    <h2 id="titulo">Carregando...</h2>
-    <p class="subtitulo" id="subtitulo">Estamos preparando as perguntas.</p>
-    <div id="formulario"></div>
-</div>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="card" id="app">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <div class="loader"></div>
+            <p style="margin-top: 20px; color: #64748b; font-weight: 500;">Carregando pesquisa...</p>
+        </div>
+    </div>
 
 <script>
-    // 1. CONFIGURAÇÃO SUPABASE (Suas Chaves)
+    // 1. CONFIGURAÇÃO (Suas Chaves)
     const SUPABASE_URL = 'https://ivhdtulsakukuuobkfhd.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aGR0dWxzYWt1a3V1b2JrZmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzY5ODksImV4cCI6MjA4NTcxMjk4OX0.6r662VLUy8kbezVNFz-LBBY_-dANAq-zV5BOJmhQe-4';
     
     const { createClient } = supabase;
     const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 2. PEGAR ID DA URL
-    const params = new URLSearchParams(window.location.search);
-    const quizId = params.get('id');
-
+    // 2. ESTADO DA APLICAÇÃO
+    let currentStep = 0;
     let perguntas = [];
     let respostas = {};
+    let quizId = null;
 
-    async function carregarQuiz() {
-        if(!quizId) {
-            document.getElementById('titulo').innerText = "Link incompleto";
-            document.getElementById('subtitulo').innerText = "Parece que o link está quebrado. Peça novamente para quem te enviou.";
-            return;
-        }
+    // 3. INICIALIZAÇÃO
+    async function init() {
+        const params = new URLSearchParams(window.location.search);
+        quizId = params.get('id');
+
+        if(!quizId) return showError("Link inválido", "Verifique a URL.");
 
         const { data, error } = await _supabase
             .from('quiz_personas')
@@ -171,65 +224,114 @@
             .eq('id', quizId)
             .single();
 
-        if(error || !data) {
-            console.error(error);
-            document.getElementById('titulo').innerText = "Pesquisa não encontrada";
-            document.getElementById('subtitulo').innerText = "Este formulário pode ter sido encerrado.";
+        if(error || !data) return showError("Pesquisa não encontrada", "Pode ter sido encerrada.");
+
+        perguntas = data.perguntas_geradas;
+        document.title = `Pesquisa: ${data.nome_produto}`;
+        renderStep();
+    }
+
+    // 4. RENDERIZAÇÃO DO PASSO ATUAL (DINÂMICO)
+    function renderStep() {
+        const app = document.getElementById('app');
+        const progressBar = document.getElementById('progressBar');
+        
+        // Atualiza barra de progresso
+        const progress = ((currentStep) / perguntas.length) * 100;
+        progressBar.style.width = `${progress}%`;
+
+        // Se acabou, envia
+        if(currentStep >= perguntas.length) {
+            enviarRespostas();
             return;
         }
 
-        document.getElementById('titulo').innerText = `Sobre o ${data.nome_produto}`;
-        document.getElementById('subtitulo').innerText = "Responda rapidinho para nos ajudar a melhorar (leva menos de 1 min).";
-        perguntas = data.perguntas_geradas;
-        renderizarFormulario();
-    }
-
-    function renderizarFormulario() {
-        const formDiv = document.getElementById('formulario');
-        let html = '';
-
-        perguntas.forEach((p) => {
-            html += `<div class="campo-box">`;
-            html += `<label>${p.texto}</label>`;
-            
-            if (p.tipo === 'multi') {
-                // Dropdown bonito com seta customizada
-                html += `<div class="select-wrapper">
-                            <select onchange="salvarResposta('${p.id}', this.value)">
-                                <option value="">Selecione uma opção...</option>
-                                ${p.opcoes.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
-                            </select>
-                         </div>`;
-            } else if (p.tipo === 'number') {
-                // Input numérico limitado
-                html += `<input type="number" min="0" max="10" inputmode="numeric" onchange="salvarResposta('${p.id}', this.value)" placeholder="Digite um número de 0 a 10">`;
-            } else {
-                // Input texto padrão
-                html += `<input type="text" onchange="salvarResposta('${p.id}', this.value)" placeholder="Sua resposta aqui...">`;
-            }
-            html += `</div>`;
-        });
-
-        html += `<button id="btnEnviar" onclick="enviar()">Enviar Minhas Respostas</button>`;
-        formDiv.innerHTML = html;
-    }
-
-    window.salvarResposta = (id, valor) => {
-        respostas[id] = valor;
-    }
-
-    window.enviar = async () => {
-        const btn = document.getElementById('btnEnviar');
+        const p = perguntas[currentStep];
         
-        // Verifica se respondeu tudo
-        const respondidas = Object.keys(respostas).length;
-        if(respondidas < perguntas.length) {
-            // Animaçãozinha de erro (tremida) pode ser adicionada depois, por enquanto alerta
-            return alert(`Faltam responder ${perguntas.length - respondidas} perguntas!`);
+        // HTML BASE DO CARD
+        let html = `
+            <div class="fade-in-up">
+                <span class="step-count">Pergunta ${currentStep + 1} de ${perguntas.length}</span>
+                <h2>${p.texto}</h2>
+        `;
+
+        // RENDERIZAÇÃO BASEADA NO TIPO
+        if (p.tipo === 'multi') {
+            html += `<div class="options-grid">`;
+            p.opcoes.forEach((opt, index) => {
+                const letra = String.fromCharCode(65 + index); // A, B, C...
+                html += `
+                    <div class="option-btn" onclick="nextStep('${p.id}', '${opt}')">
+                        <span>${opt}</span>
+                        <span class="option-key">${letra}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        } 
+        else if (p.tipo === 'number') {
+            html += `
+                <div class="input-group">
+                    <input type="number" id="inputAtual" placeholder="Digite um número..."  autofocus>
+                </div>
+                <button class="btn-next" onclick="validateAndNext('${p.id}')">
+                    OK <span style="font-size: 20px">↵</span>
+                </button>
+            `;
+        } 
+        else {
+            html += `
+                <div class="input-group">
+                    <input type="text" id="inputAtual" placeholder="Digite sua resposta..." autofocus>
+                </div>
+                <button class="btn-next" onclick="validateAndNext('${p.id}')">
+                    OK <span style="font-size: 20px">↵</span>
+                </button>
+            `;
         }
 
-        btn.innerText = "Enviando...";
-        btn.disabled = true;
+        html += `</div>`; // Fecha fade-in-up
+        app.innerHTML = html;
+
+        // Foca no input se existir e permite ENTER
+        const input = document.getElementById('inputAtual');
+        if(input) {
+            input.focus();
+            input.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") validateAndNext(p.id);
+            });
+        }
+    }
+
+    // 5. LÓGICA DE NAVEGAÇÃO
+    window.nextStep = (id, valor) => {
+        respostas[id] = valor;
+        currentStep++;
+        renderStep();
+    }
+
+    window.validateAndNext = (id) => {
+        const val = document.getElementById('inputAtual').value;
+        if(!val || val.trim() === "") {
+            // Efeito visual de erro (tremida)
+            document.getElementById('inputAtual').style.borderBottomColor = "#ef4444";
+            setTimeout(() => document.getElementById('inputAtual').style.borderBottomColor = "#cbd5e1", 500);
+            return;
+        }
+        nextStep(id, val);
+    }
+
+    // 6. ENVIO FINAL
+    async function enviarRespostas() {
+        const app = document.getElementById('app');
+        document.getElementById('progressBar').style.width = "100%";
+        
+        app.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <div class="loader"></div>
+                <h2 style="margin-top:20px; font-size:20px;">Enviando respostas...</h2>
+            </div>
+        `;
 
         const { error } = await _supabase.from('quiz_responses').insert({
             quiz_id: quizId,
@@ -237,21 +339,34 @@
         });
 
         if(error) {
-            alert("Ocorreu um erro ao salvar. Tente novamente.");
-            btn.innerText = "Enviar Minhas Respostas";
-            btn.disabled = false;
+            app.innerHTML = `
+                <div class="success-screen">
+                    <span style="font-size: 48px; display:block; margin-bottom:10px;">❌</span>
+                    <h2>Erro ao enviar</h2>
+                    <p>Tente recarregar a página.</p>
+                </div>
+            `;
         } else {
-            document.getElementById('app').innerHTML = `
-                <div class="sucesso-box">
+            app.innerHTML = `
+                <div class="success-screen fade-in-up">
                     <span class="icon-check">🎉</span>
                     <h2>Muito Obrigado!</h2>
-                    <p class="subtitulo">Sua opinião foi registrada e ajuda muito.</p>
+                    <p>Sua opinião é fundamental para nós.</p>
                 </div>
             `;
         }
     }
 
-    carregarQuiz();
+    function showError(title, sub) {
+        document.getElementById('app').innerHTML = `
+            <div class="success-screen">
+                <h2>${title}</h2>
+                <p>${sub}</p>
+            </div>
+        `;
+    }
+
+    init();
 </script>
 
 </body>
