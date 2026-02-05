@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa de Satisfação</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input, select, button { width: 100%; padding: 10px; margin-top: 10px; margin-bottom: 20px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-size: 16px; }
+        h2 { color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="card" id="app">
+    <h2 id="titulo">Carregando pesquisa...</h2>
+    <div id="formulario"></div>
+</div>
+
+<script>
+    // 1. CONFIGURAÇÃO (Coloque suas chaves aqui)
+    const SUPABASE_URL = 'https://ivhdtulsakukuuobkfhd.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2aGR0dWxzYWt1a3V1b2JrZmhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxMzY5ODksImV4cCI6MjA4NTcxMjk4OX0.6r662VLUy8kbezVNFz-LBBY_-dANAq-zV5BOJmhQe-4';
+    const supabase = showConfirm = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 2. PEGAR ID DA URL (ex: meusanuncio.com/pesquisa.html?id=123-abc)
+    const params = new URLSearchParams(window.location.search);
+    const quizId = params.get('id');
+
+    let perguntas = [];
+    let respostas = {};
+
+    async function carregarQuiz() {
+        if(!quizId) return document.getElementById('titulo').innerText = "Link inválido.";
+
+        const { data, error } = await supabase
+            .from('quiz_personas')
+            .select('nome_produto, perguntas_geradas')
+            .eq('id', quizId)
+            .single();
+
+        if(error || !data) return document.getElementById('titulo').innerText = "Pesquisa não encontrada.";
+
+        document.getElementById('titulo').innerText = `Pesquisa sobre: ${data.nome_produto}`;
+        perguntas = data.perguntas_geradas;
+        renderizarFormulario();
+    }
+
+    function renderizarFormulario() {
+        const formDiv = document.getElementById('formulario');
+        let html = '';
+
+        perguntas.forEach((p, index) => {
+            html += `<label><strong>${p.texto}</strong></label>`;
+            
+            if (p.tipo === 'multi') {
+                html += `<select onchange="salvarResposta('${p.id}', this.value)">
+                            <option value="">Selecione...</option>
+                            ${p.opcoes.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                         </select>`;
+            } else {
+                html += `<input type="text" onchange="salvarResposta('${p.id}', this.value)" placeholder="Sua resposta">`;
+            }
+        });
+
+        html += `<button onclick="enviar()">Enviar Respostas</button>`;
+        formDiv.innerHTML = html;
+    }
+
+    window.salvarResposta = (id, valor) => {
+        respostas[id] = valor;
+    }
+
+    window.enviar = async () => {
+        // Validação simples
+        if(Object.keys(respostas).length < perguntas.length) {
+            return alert("Por favor, responda todas as perguntas.");
+        }
+
+        const { error } = await supabase.from('quiz_responses').insert({
+            quiz_id: quizId,
+            dados_resposta: respostas
+        });
+
+        if(error) {
+            alert("Erro ao enviar. Tente novamente.");
+        } else {
+            document.getElementById('app').innerHTML = "<h2>Obrigado! ✅</h2><p>Sua opinião ajuda muito.</p>";
+        }
+    }
+
+    carregarQuiz();
+</script>
+
+</body>
+</html>
