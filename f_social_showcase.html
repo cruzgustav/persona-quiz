@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Carregando Vitrine...</title>
+    <title>Vitrine</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -14,7 +14,7 @@
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
         
-        /* --- MASONRY GRID (Estilo Pinterest Real) --- */
+        /* MASONRY GRID */
         .products-grid { 
             column-count: 2; 
             column-gap: 12px; 
@@ -26,25 +26,21 @@
         .product-item { 
             break-inside: avoid; 
             margin-bottom: 12px; 
-            transform: translateZ(0); /* Fix para renderização mobile */
+            transform: translateZ(0); 
         }
         
-        /* Animações */
+        /* ANIMAÇÕES */
         .fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         
         .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        /* Elementos Visuais */
+        /* CUSTOM UI */
         .cart-badge { position: absolute; top: -2px; right: -2px; background: #e11d48; color: white; font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(225, 29, 72, 0.4); }
         .selected-ring { box-shadow: 0 0 0 3px #e11d48; transform: scale(0.98); }
         
-        /* Cartão de Produto */
-        .product-card { transition: transform 0.2s, box-shadow 0.2s; }
-        .product-card:active { transform: scale(0.98); }
-        
-        /* Scrollbar Carrinho */
+        /* SCROLLBAR */
         #cart-items::-webkit-scrollbar { width: 4px; }
         #cart-items::-webkit-scrollbar-track { background: #f1f1f1; }
         #cart-items::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -55,13 +51,12 @@
     <div id="loading" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
         <div class="flex flex-col items-center gap-3">
             <div class="w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Carregando</p>
         </div>
     </div>
 
     <div id="app" class="hidden max-w-5xl mx-auto bg-white min-h-screen shadow-2xl shadow-slate-200/50 relative">
         
-        <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between transition-all" id="main-header">
+        <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between transition-all">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shadow-sm relative">
                     <img id="store-avatar" src="" class="w-full h-full object-cover hidden">
@@ -69,12 +64,12 @@
                 </div>
                 <div>
                     <h1 id="store-name" class="font-bold text-slate-900 leading-tight text-lg">...</h1>
-                    <p class="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Coleção Exclusiva</p>
+                    <p class="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Coleção Online</p>
                 </div>
             </div>
 
             <div class="flex items-center gap-2">
-                <button onclick="shareStore()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors" title="Compartilhar Link">
+                <button onclick="shareStore()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
                     <i class="ph-bold ph-share-network text-xl"></i>
                 </button>
                 <button onclick="toggleCart()" class="relative p-2 text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors">
@@ -86,33 +81,26 @@
 
         <div class="px-5 mt-6 mb-6">
             <h2 id="collection-title" class="text-3xl font-black text-slate-900 leading-none tracking-tight mb-2">...</h2>
-            
             <div id="promo-tag" class="hidden inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-bold border border-green-100 uppercase tracking-wide shadow-sm">
                 <i class="ph-fill ph-gift"></i> <span id="promo-text">Oferta</span>
             </div>
         </div>
 
         <main class="px-3 pb-10">
-            <div id="products-grid" class="products-grid">
-                </div>
+            <div id="products-grid" class="products-grid"></div>
         </main>
         
         <div id="help-popup" class="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-30 hidden slide-up">
-            <div class="bg-slate-900/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-slate-800">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-gradient-to-br from-rose-500 to-pink-600 rounded-full flex items-center justify-center shrink-0 shadow-lg">
-                        <i class="ph-fill ph-chat-circle-heart text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-bold text-white mb-0.5">Em dúvida?</p>
-                        <p class="text-[11px] text-slate-300 leading-tight">Escolha 3 looks e peça ajuda às amigas no WhatsApp!</p>
-                    </div>
+            <div class="bg-slate-900/95 backdrop-blur-md text-white p-5 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-slate-800">
+                <div class="flex-1">
+                    <p class="text-base font-bold text-rose-300 mb-1">🤔 Em dúvida no look?</p>
+                    <p class="text-sm text-slate-300 leading-snug">Selecione até 3 opções e peça ajuda para suas amigas!</p>
                 </div>
                 <div class="flex flex-col gap-2 shrink-0">
-                    <button onclick="startSelectionMode()" class="bg-white text-slate-900 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors shadow-md">
-                        Escolher
+                    <button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-900/50">
+                        Pedir Ajuda
                     </button>
-                    <button onclick="closePopup()" class="text-[10px] text-slate-500 hover:text-white underline">Agora não</button>
+                    <button onclick="closePopup()" class="text-xs text-slate-500 hover:text-white text-center">Agora não</button>
                 </div>
             </div>
         </div>
@@ -136,25 +124,15 @@
         <div class="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-0 md:p-8 pointer-events-none">
             <div class="bg-white w-full h-full md:h-auto md:max-w-lg md:rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto relative animate-[fadeIn_0.3s_ease-out]">
-                
-                <button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors">
-                    <i class="ph-bold ph-x text-xl"></i>
-                </button>
-
-                <div class="relative flex-1 bg-slate-100 overflow-hidden">
-                    <img id="modal-img" src="" class="w-full h-full object-cover">
-                </div>
-
+                <button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors"><i class="ph-bold ph-x text-xl"></i></button>
+                <div class="relative flex-1 bg-slate-100 overflow-hidden"><img id="modal-img" src="" class="w-full h-full object-cover"></div>
                 <div class="bg-white p-6 shrink-0 border-t border-slate-100 pb-8">
                     <div class="flex justify-between items-start mb-2">
                         <h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight pr-4">...</h2>
                         <span id="modal-price" class="text-2xl font-black text-rose-600 whitespace-nowrap">...</span>
                     </div>
                     <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider font-bold">Disponível para entrega</p>
-
-                    <button onclick="addToCartFromModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all text-sm uppercase tracking-wide shadow-xl">
-                        <i class="ph-bold ph-shopping-bag text-lg"></i> Adicionar à Sacola
-                    </button>
+                    <button onclick="addToCartFromModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all text-sm uppercase tracking-wide shadow-xl"><i class="ph-bold ph-shopping-bag text-lg"></i> Adicionar à Sacola</button>
                 </div>
             </div>
         </div>
@@ -162,38 +140,20 @@
 
     <div id="cart-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity backdrop-blur-sm" onclick="toggleCart()"></div>
     <div id="cart-drawer" class="fixed inset-x-0 bottom-0 md:top-0 md:right-0 md:left-auto md:w-[400px] md:h-full bg-white z-[70] rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none shadow-2xl transform translate-y-full md:translate-x-full transition-transform duration-300 flex flex-col h-[85vh] md:h-screen">
-        
         <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-white rounded-t-3xl">
-            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <span class="bg-rose-100 p-1.5 rounded-lg"><i class="ph-fill ph-shopping-bag text-rose-600"></i></span> Sua Sacola
-            </h2>
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2"><span class="bg-rose-100 p-1.5 rounded-lg"><i class="ph-fill ph-shopping-bag text-rose-600"></i></span> Sua Sacola</h2>
             <button onclick="toggleCart()" class="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full"><i class="ph-bold ph-x"></i></button>
         </div>
-
         <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center text-center p-8 hidden">
-            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
-                <i class="ph-fill ph-basket text-4xl"></i>
-            </div>
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300"><i class="ph-fill ph-basket text-4xl"></i></div>
             <p class="text-slate-900 font-bold mb-1 text-lg">Sacola Vazia</p>
             <p class="text-sm text-slate-400">Explore a vitrine e adicione seus favoritos.</p>
             <button onclick="toggleCart()" class="mt-6 text-rose-600 font-bold text-sm border border-rose-200 px-6 py-2 rounded-full hover:bg-rose-50 transition-colors">Voltar para Loja</button>
         </div>
-
-        <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4">
-            </div>
-
+        <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
         <div id="cart-footer" class="p-6 border-t border-slate-100 bg-slate-50 hidden shrink-0 pb-10">
-            <div class="flex justify-between items-end mb-4">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total do Pedido</span>
-                <span id="cart-total" class="text-2xl font-black text-slate-900">R$ 0,00</span>
-            </div>
-            <button onclick="checkoutWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-all">
-                <i class="ph-fill ph-whatsapp-logo text-xl"></i>
-                <div class="text-left leading-none">
-                    <div class="text-[10px] font-normal opacity-90">Finalizar pedido no</div>
-                    <div class="text-sm">WhatsApp</div>
-                </div>
-            </button>
+            <div class="flex justify-between items-end mb-4"><span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total do Pedido</span><span id="cart-total" class="text-2xl font-black text-slate-900">R$ 0,00</span></div>
+            <button onclick="checkoutWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-all"><i class="ph-fill ph-whatsapp-logo text-xl"></i> <div class="text-left leading-none"><div class="text-[10px] font-normal opacity-90">Finalizar pedido no</div><div class="text-sm">WhatsApp</div></div></button>
         </div>
     </div>
     
@@ -212,109 +172,78 @@
 
             if(encoded) {
                 try {
-                    // Decodificação segura
                     const json = decodeURIComponent(escape(atob(encoded)));
                     appData = JSON.parse(json);
                     
-                    // 1. NOME DA LOJA DINÂMICO
-                    const storeName = appData.profile.name || "Nossa Loja";
-                    document.getElementById('store-name').innerText = storeName;
-                    document.title = `${storeName} - Vitrine`; // Título da aba
-                    
-                    // 2. AVATAR / INICIAL DINÂMICA
-                    if (appData.profile.name) {
-                        document.getElementById('store-initial').innerText = appData.profile.name.charAt(0).toUpperCase();
-                    }
-                    // Se tiver URL de imagem no perfil (futuro), mostra img, senão inicial
-                    if (appData.profile.avatar) { 
-                        /* Lógica futura se o app mandar avatar */ 
-                    }
+                    // --- ATUALIZAÇÃO DOS DADOS DA LOJA ---
+                    // Garante que o nome venha do JSON
+                    const dynamicName = appData.profile.name || "Nossa Loja";
+                    document.getElementById('store-name').innerText = dynamicName;
+                    document.getElementById('store-initial').innerText = dynamicName.charAt(0).toUpperCase();
+                    document.title = dynamicName; 
 
-                    // 3. TÍTULO DA COLEÇÃO
+                    // Atualiza Título e Promo
                     document.getElementById('collection-title').innerText = appData.collection;
-                    
-                    // 4. TEXTO PROMOCIONAL
                     if(appData.config.promo_text) {
                         const tag = document.getElementById('promo-tag');
                         document.getElementById('promo-text').innerText = appData.config.promo_text;
                         tag.classList.remove('hidden');
                     }
 
-                    // MODO VOTAÇÃO (Link da Amiga)
+                    // Modo Amiga (Votação)
                     if(picks) {
                         isVoteMode = true;
                         const pickIds = picks.split(',');
-                        // Filtra apenas os produtos que a amiga escolheu
                         appData.products = appData.products.filter(p => pickIds.includes(p.id.toString()));
                         setupVoteUI();
                     } else if (appData.config.enable_voting) {
-                        // Delay do popup para não ser invasivo
                         setTimeout(() => document.getElementById('help-popup').classList.remove('hidden'), 4000);
                     }
 
                     renderGrid();
-                    
-                    // Fim do loading
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
 
                 } catch(e) { 
-                    console.error("Erro dados", e); 
-                    document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Link inválido ou expirado.</p>';
+                    console.error("Erro dados", e);
+                    alert("Erro ao carregar vitrine. Verifique o link.");
                 }
             } else {
-                // Modo Demo (sem link) para teste visual
-                document.getElementById('loading').innerHTML = '<p class="text-slate-400">Aguardando dados...</p>';
+                document.getElementById('loading').innerHTML = '<p class="text-slate-400 text-sm">Link incompleto.</p>';
             }
         };
         
         function setupVoteUI() {
             document.getElementById('collection-title').innerText = "Ajude sua Amiga! 😍";
             document.getElementById('help-popup').classList.add('hidden');
-            // Troca ícone do carrinho por coração (visual)
             document.querySelector('.ph-shopping-bag').classList.replace('ph-shopping-bag', 'ph-heart');
         }
         
-        // --- RENDER GRID (MASONRY REAL) ---
         function renderGrid() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = '';
-            
             appData.products.forEach((p, idx) => {
                 const isImage = p.color && p.color.includes('http');
                 const isSelected = selection.includes(p.id);
-                
                 const el = document.createElement('div');
-                // Classes para o Masonry e animação
                 el.className = `product-item product-card relative group bg-white rounded-xl overflow-hidden cursor-pointer shadow-sm border border-slate-100 ${isSelected ? 'selected-ring' : ''}`;
                 el.style.animation = `fadeIn 0.6s ease-out ${idx * 0.05}s forwards`;
                 el.style.opacity = '0';
                 
-                // Overlay de Votação (Se estiver no modo voto)
-                const voteOverlay = isVoteMode ? 
-                    `<div class="absolute inset-0 bg-rose-900/0 hover:bg-rose-900/10 transition-colors z-10 flex items-center justify-center group-hover:opacity-100"><span class="bg-white text-rose-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg transform scale-0 group-hover:scale-100 transition-transform">Votar Neste</span></div>` 
-                    : '';
-
-                // Check de Seleção
-                const checkMark = isSelected 
-                    ? `<div class="absolute top-2 right-2 bg-rose-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg z-20 animate-[bounce_0.3s]"><i class="ph-bold ph-check text-xs"></i></div>` 
-                    : '';
+                // Overlay de Voto
+                const overlay = isVoteMode ? `<div class="absolute inset-0 bg-rose-900/0 hover:bg-rose-900/10 transition-colors z-10 flex items-center justify-center group-hover:opacity-100"><span class="bg-white text-rose-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg transform scale-0 group-hover:scale-100 transition-transform">Votar Neste</span></div>` : '';
+                const check = isSelected ? `<div class="absolute top-2 right-2 bg-rose-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg z-20 animate-[bounce_0.3s]"><i class="ph-bold ph-check text-xs"></i></div>` : '';
 
                 el.innerHTML = `
                     <div class="relative bg-slate-50">
-                        ${voteOverlay}
-                        ${checkMark}
-                        ${isImage ? 
-                            `<img src="${p.color}" class="w-full h-auto object-cover block" loading="lazy" alt="${p.name}">` : 
-                            `<div class="w-full aspect-[3/4]" style="background:${p.color}"></div>`
-                        }
+                        ${overlay} ${check}
+                        ${isImage ? `<img src="${p.color}" class="w-full h-auto object-cover block" loading="lazy">` : `<div class="w-full aspect-[3/4]" style="background:${p.color}"></div>`}
                     </div>
                     <div class="p-3">
                         <h3 class="text-[13px] font-bold text-slate-800 leading-snug line-clamp-2">${p.name}</h3>
                         <p class="text-xs text-slate-500 font-medium mt-1">R$ ${p.price}</p>
                     </div>
                 `;
-                
                 el.onclick = () => handleCardClick(p);
                 grid.appendChild(el);
             });
@@ -329,49 +258,29 @@
         
         // --- CARRINHO ---
         function toggleCart() {
-            if(isVoteMode) return alert("Modo votação: Não é possível comprar agora.");
+            if(isVoteMode) return;
             const drawer = document.getElementById('cart-drawer');
             const back = document.getElementById('cart-drawer-backdrop');
-            
             const isOpen = !drawer.classList.contains('translate-y-full') && !drawer.classList.contains('md:translate-x-full');
-            
-            if (isOpen) { // Fechar
-                drawer.classList.add('translate-y-full', 'md:translate-x-full');
-                back.classList.add('hidden');
-            } else { // Abrir
-                drawer.classList.remove('translate-y-full', 'md:translate-x-full');
-                back.classList.remove('hidden');
-                renderCart();
-            }
+            if (isOpen) { drawer.classList.add('translate-y-full', 'md:translate-x-full'); back.classList.add('hidden'); } 
+            else { drawer.classList.remove('translate-y-full', 'md:translate-x-full'); back.classList.remove('hidden'); renderCart(); }
         }
         
         function addToCartFromModal() {
-            // Verifica duplicidade (opcional)
-            // if (cart.find(x => x.id === currentProduct.id)) { ... }
             cart.push(currentProduct);
             closeModal();
             updateCartCount();
-            
-            // Feedback e abre carrinho
             const badge = document.getElementById('cart-badge-count');
             badge.classList.add('animate-ping');
-            setTimeout(() => {
-                badge.classList.remove('animate-ping');
-                toggleCart();
-            }, 300);
+            setTimeout(() => { badge.classList.remove('animate-ping'); toggleCart(); }, 300);
         }
         
-        function removeFromCart(idx) {
-            cart.splice(idx, 1);
-            renderCart();
-            updateCartCount();
-        }
+        function removeFromCart(idx) { cart.splice(idx, 1); renderCart(); updateCartCount(); }
         
         function updateCartCount() {
             const badge = document.getElementById('cart-badge-count');
             badge.innerText = cart.length;
-            if(cart.length > 0) badge.classList.remove('hidden');
-            else badge.classList.add('hidden');
+            if(cart.length > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden');
         }
         
         function renderCart() {
@@ -379,23 +288,13 @@
             const empty = document.getElementById('cart-empty');
             const footer = document.getElementById('cart-footer');
             const totalEl = document.getElementById('cart-total');
-            
             list.innerHTML = '';
             let total = 0;
-            
-            if(cart.length === 0) {
-                empty.classList.remove('hidden');
-                footer.classList.add('hidden');
-                return;
-            }
-            
-            empty.classList.add('hidden');
-            footer.classList.remove('hidden');
-            
+            if(cart.length === 0) { empty.classList.remove('hidden'); footer.classList.add('hidden'); return; }
+            empty.classList.add('hidden'); footer.classList.remove('hidden');
             cart.forEach((p, idx) => {
                 const val = parseFloat(p.price.replace(',', '.'));
                 if(!isNaN(val)) total += val;
-                
                 const isImage = p.color && p.color.includes('http');
                 const item = document.createElement('div');
                 item.className = "flex gap-3 bg-white border border-slate-100 p-2 rounded-xl items-center";
@@ -407,9 +306,7 @@
                         <h4 class="text-sm font-bold text-slate-800 line-clamp-1">${p.name}</h4>
                         <p class="text-xs text-slate-500 font-bold">R$ ${p.price}</p>
                     </div>
-                    <button onclick="removeFromCart(${idx})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors">
-                        <i class="ph-bold ph-trash"></i>
-                    </button>
+                    <button onclick="removeFromCart(${idx})" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-colors"><i class="ph-bold ph-trash"></i></button>
                 `;
                 list.appendChild(item);
             });
@@ -421,54 +318,14 @@
             const storeName = appData.profile.name || "Loja";
             let msg = `Olá! 👋 Vi a vitrine *${storeName}* e gostaria de fechar meu pedido:\n\n`;
             let total = 0;
-            
             cart.forEach(p => {
                 msg += `▪️ ${p.name} (R$ ${p.price})\n`;
                 const val = parseFloat(p.price.replace(',', '.'));
                 if(!isNaN(val)) total += val;
             });
-            
             msg += `\n💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
-            if(appData.config.promo_text) msg += `🎁 ${appData.config.promo_text}\n`;
-            msg += `\nComo podemos combinar o pagamento e entrega?`;
-            
             const num = appData.profile.whatsapp.replace(/\D/g,'');
             if(num.length > 8) window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
-            else alert("O número da loja não está configurado corretamente.");
-        }
-        
-        // --- SELEÇÃO ---
-        function startSelectionMode() {
-            isSelectionMode = true;
-            selection = [];
-            document.getElementById('help-popup').classList.add('hidden');
-            document.getElementById('selection-bar').classList.remove('hidden');
-            document.getElementById('sel-count').innerText = "0";
-            renderGrid();
-        }
-        function stopSelectionMode() {
-            isSelectionMode = false;
-            selection = [];
-            document.getElementById('selection-bar').classList.add('hidden');
-            renderGrid();
-        }
-        function toggleSelection(id) {
-            if(selection.includes(id)) selection = selection.filter(i => i !== id);
-            else { if(selection.length >= 3) return alert("Ops! Escolha no máximo 3 opções."); selection.push(id); }
-            
-            document.getElementById('sel-count').innerText = selection.length;
-            const btn = document.getElementById('btn-share-friend');
-            btn.disabled = selection.length === 0;
-            btn.classList.toggle('opacity-50', selection.length === 0);
-            btn.classList.toggle('cursor-not-allowed', selection.length === 0);
-            
-            renderGrid();
-        }
-        function shareWithFriend() {
-            const url = new URL(window.location.href);
-            url.searchParams.set('picks', selection.join(','));
-            const text = `Amiga, socorro! 😱\n\nTô em dúvida entre esses looks da ${appData.profile.name}. Clica aqui e vota no seu favorito pra mim:\n${url}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
         
         // --- OUTROS ---
@@ -482,6 +339,35 @@
         }
         function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
         function closePopup() { document.getElementById('help-popup').classList.add('hidden'); }
+        
+        function startSelectionMode() {
+            isSelectionMode = true; selection = [];
+            document.getElementById('help-popup').classList.add('hidden');
+            document.getElementById('selection-bar').classList.remove('hidden');
+            document.getElementById('sel-count').innerText = "0";
+            renderGrid();
+        }
+        function stopSelectionMode() {
+            isSelectionMode = false; selection = [];
+            document.getElementById('selection-bar').classList.add('hidden');
+            renderGrid();
+        }
+        function toggleSelection(id) {
+            if(selection.includes(id)) selection = selection.filter(i => i !== id);
+            else { if(selection.length >= 3) return alert("Máximo 3 itens."); selection.push(id); }
+            document.getElementById('sel-count').innerText = selection.length;
+            const btn = document.getElementById('btn-share-friend');
+            btn.disabled = selection.length === 0;
+            btn.classList.toggle('opacity-50', selection.length === 0);
+            btn.classList.toggle('cursor-not-allowed', selection.length === 0);
+            renderGrid();
+        }
+        function shareWithFriend() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('picks', selection.join(','));
+            const text = `Amiga, socorro! 😱\n\nTô em dúvida entre esses looks da ${appData.profile.name}. Clica aqui e vota no seu favorito pra mim:\n${url}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
         function voteForProduct(p) {
             const text = `Amiga! Votei neste aqui: *${p.name}* 😍 Achei perfeito!`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -490,7 +376,6 @@
             if(navigator.share) navigator.share({ title: document.title, url: window.location.href });
             else { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
         }
-        
     </script>
 </body>
 </html>
