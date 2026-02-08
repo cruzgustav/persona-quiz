@@ -4,45 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vitrine</title>
-    
+   
     <script src="https://cdn.tailwindcss.com"></script>
-    
+   
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    
+   
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
+       
+        /* Grid para 3 em 3 - Ajustado para produtos menores */
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; padding: 0; }
+        @media (min-width: 768px) { .products-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+        @media (min-width: 1024px) { .products-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
+        .product-item { break-inside: avoid; margin-bottom: 0; }
         
-        /* Grid Masonry */
-        .masonry-grid { column-count: 2; column-gap: 10px; }
-        @media (min-width: 768px) { .masonry-grid { column-count: 3; column-gap: 16px; } }
-        @media (min-width: 1024px) { .masonry-grid { column-count: 4; column-gap: 16px; } }
-        .masonry-item { break-inside: avoid; margin-bottom: 10px; }
-
         /* Animações */
         .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; transform: translateY(10px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
-
+        
         /* Slide Up (Gavetas) */
         .slide-up-enter { transform: translateY(100%); }
         .slide-up-active { transform: translateY(0); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .slide-up-exit { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-
+        
         /* Badge do Carrinho */
         .cart-badge { position: absolute; top: -2px; right: -2px; background: #e11d48; color: white; font-size: 9px; font-weight: 800; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(225, 29, 72, 0.3); }
-        
+       
         .selected-ring { box-shadow: 0 0 0 2px #e11d48; }
+        
+        /* Ajustes para produtos menores */
+        .product-card { transition: all 0.3s ease; }
+        .product-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .product-image { aspect-ratio: 3/4; }
+        
+        /* Melhorias no popup e barra de seleção */
+        #help-popup { animation: bounceIn 0.6s ease-out; }
+        @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }
+        
+        .vote-card { position: relative; }
+        .vote-overlay { position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,0,0,0.1), rgba(255,0,0,0.05)); border: 2px solid #e11d48; border-radius: 12px; }
+        .vote-check { position: absolute; top: 8px; right: 8px; background: #e11d48; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; z-index: 10; }
+        
+        /* Carrinho mais certinho */
+        #cart-items::-webkit-scrollbar { width: 4px; }
+        #cart-items::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 2px; }
+        #cart-items::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 2px; }
+        #cart-items::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     </style>
 </head>
 <body class="bg-gray-50 pb-24">
-
     <div id="loading" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
         <div class="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
     </div>
-
     <div id="app" class="hidden max-w-5xl mx-auto bg-white min-h-screen shadow-2xl shadow-slate-200/50 relative">
-        
+       
         <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200">
@@ -54,77 +70,89 @@
                     <p class="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Coleção Online</p>
                 </div>
             </div>
-
             <div class="flex items-center gap-2">
-                <button onclick="shareStore()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
+                <button onclick="shareStore()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors" title="Compartilhar vitrine">
                     <i class="ph-bold ph-share-network text-xl"></i>
                 </button>
-                <button onclick="toggleCart()" class="relative p-2 text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors">
+                <button onclick="toggleCart()" class="relative p-2 text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors" title="Ver sacola">
                     <i class="ph-bold ph-shopping-bag text-xl"></i>
                     <div id="cart-badge-count" class="cart-badge hidden">0</div>
                 </button>
             </div>
         </header>
-
         <div class="px-4 mt-6 mb-6">
             <h2 id="collection-title" class="text-3xl font-black text-slate-900 leading-none tracking-tight mb-2">...</h2>
             <div id="promo-tag" class="hidden inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-2.5 py-1 rounded-md text-[10px] font-bold border border-green-100 uppercase tracking-wide shadow-sm">
                 <i class="ph-fill ph-truck"></i> <span>Frete Grátis</span>
             </div>
         </div>
-
-        <main class="px-3">
-            <div id="products-grid" class="masonry-grid"></div>
+        <main class="px-3 pb-8">
+            <div id="products-grid" class="products-grid"></div>
         </main>
-
+        
+        <!-- Popup de ajuda aprimorado -->
         <div id="help-popup" class="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-80 z-30 hidden animate-bounce-in">
-            <div class="bg-slate-900/95 backdrop-blur text-white p-4 rounded-xl shadow-xl flex items-center justify-between gap-3 border border-slate-800">
-                <div>
-                    <p class="text-xs font-bold text-rose-300 mb-0.5">🤔 Em dúvida?</p>
-                    <p class="text-[10px] text-slate-300">Escolha 3 looks e peça ajuda às amigas!</p>
+            <div class="bg-gradient-to-r from-rose-600 to-pink-600 text-white p-4 rounded-xl shadow-xl flex items-center justify-between gap-3 border border-rose-500/50 backdrop-blur-md">
+                <div class="flex items-center gap-3 flex-1">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                        <i class="ph-fill ph-sparkle text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold mb-0.5">🤔 Em dúvida no look perfeito?</p>
+                        <p class="text-xs text-rose-100">Selecione até 3 opções e peça opinião às amigas no WhatsApp. Elas vão amar ajudar! 💕</p>
+                    </div>
                 </div>
-                <button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap shadow-lg shadow-rose-900/50">
-                    Pedir Ajuda
-                </button>
-                <button onclick="closePopup()" class="text-slate-500 hover:text-white"><i class="ph-bold ph-x"></i></button>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="closePopup()" class="text-rose-200 hover:text-white p-1"><i class="ph-bold ph-x text-lg"></i></button>
+                    <button onclick="startSelectionMode()" class="bg-white text-rose-600 hover:bg-rose-50 px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg">
+                        <i class="ph-fill ph-heart text-rose-500 mr-1"></i>Pedir Ajuda
+                    </button>
+                </div>
             </div>
         </div>
-
-        <div id="selection-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-40 hidden shadow-[0_-5px_30px_rgba(0,0,0,0.1)] md:max-w-5xl md:mx-auto">
+        
+        <!-- Barra de seleção aprimorada -->
+        <div id="selection-bar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-4 z-40 hidden shadow-[0_-5px_30px_rgba(0,0,0,0.1)] md:max-w-5xl md:mx-auto">
             <div class="flex items-center justify-between gap-4">
-                <div class="text-xs font-bold text-slate-500 uppercase tracking-wide">
-                    <span id="sel-count" class="text-rose-600 text-lg mr-1 font-black">0</span>de 3
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-rose-100 rounded-full flex items-center justify-center">
+                        <i class="ph-fill ph-users text-rose-600 text-sm"></i>
+                    </div>
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                        <span id="sel-count" class="text-rose-600 text-lg mr-1 font-black">0</span>/3 selecionados
+                    </span>
                 </div>
-                <button id="btn-share-friend" onclick="shareWithFriend()" class="flex-1 bg-rose-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all shadow-lg shadow-rose-200" disabled>
+                <button id="btn-share-friend" onclick="shareWithFriend()" class="flex-1 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all shadow-lg shadow-rose-200 disabled:cursor-not-allowed" disabled>
                     <i class="ph-fill ph-whatsapp-logo text-lg"></i>
-                    Enviar p/ Amiga
+                    Enviar para Amigas
                 </button>
-                <button onclick="stopSelectionMode()" class="p-3 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
+                <button onclick="stopSelectionMode()" class="p-3 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors" title="Cancelar seleção">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
             </div>
+            <div id="selection-preview" class="mt-3 flex gap-2 overflow-x-auto pb-1"></div>
         </div>
-
+        
     </div>
-
+    
+    <!-- Modal do Produto -->
     <div id="product-modal" class="fixed inset-0 z-50 hidden">
         <div class="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
         <div class="absolute inset-0 flex items-center justify-center p-0 md:p-8 pointer-events-none">
             <div class="bg-white w-full h-full md:h-auto md:max-w-lg md:rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto relative animate-in fade-in zoom-in duration-200">
-                
+               
                 <button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors">
                     <i class="ph-bold ph-x text-xl"></i>
                 </button>
-
                 <div class="relative flex-1 bg-slate-100 overflow-hidden">
-                    <img id="modal-img" src="" class="w-full h-full object-cover">
+                    <img id="modal-img" src="" class="w-full h-full object-cover" alt="Produto">
                 </div>
-
                 <div class="bg-white p-6 shrink-0 border-t border-slate-100">
                     <div class="flex justify-between items-start mb-2">
                         <h2 id="modal-title" class="text-xl font-bold text-slate-900 leading-tight pr-4">Nome</h2>
                         <span id="modal-price" class="text-xl font-black text-rose-600 whitespace-nowrap">R$ 00</span>
                     </div>
                     <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider font-bold">Disponível</p>
-
                     <button onclick="addToCartFromModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all text-sm uppercase tracking-wide shadow-xl shadow-slate-200">
                         <i class="ph-bold ph-plus"></i> Adicionar à Sacola
                     </button>
@@ -132,17 +160,17 @@
             </div>
         </div>
     </div>
-
+    
+    <!-- Carrinho Drawer Aprimorado -->
     <div id="cart-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity" onclick="toggleCart()"></div>
     <div id="cart-drawer" class="fixed inset-x-0 bottom-0 md:top-0 md:right-0 md:left-auto md:w-96 md:h-full bg-white z-[70] rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none shadow-[0_-10px_40px_rgba(0,0,0,0.2)] transform translate-y-full md:translate-x-full transition-transform duration-300 flex flex-col h-[85vh] md:h-screen">
-        
+       
         <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-white rounded-t-3xl">
             <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
                 <i class="ph-fill ph-shopping-bag text-rose-500"></i> Sua Sacola
             </h2>
             <button onclick="toggleCart()" class="text-slate-400 hover:text-slate-600 bg-slate-50 p-1.5 rounded-full"><i class="ph-bold ph-x"></i></button>
         </div>
-
         <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center text-center p-8 hidden">
             <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300">
                 <i class="ph-fill ph-basket text-3xl"></i>
@@ -151,22 +179,22 @@
             <p class="text-xs text-slate-400">Adicione looks incríveis para finalizar.</p>
             <button onclick="toggleCart()" class="mt-6 text-rose-600 font-bold text-sm hover:underline">Continuar comprando</button>
         </div>
-
-        <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4">
-            </div>
-
-        <div id="cart-footer" class="p-5 border-t border-slate-100 bg-slate-50 hidden">
+        <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin scrollbar-thumb-slate-300">
+            <!-- Itens renderizados via JS -->
+        </div>
+        <div id="cart-footer" class="p-5 border-t border-slate-100 bg-slate-50 hidden shrink-0">
             <div class="flex justify-between items-end mb-4">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total Estimado</span>
                 <span id="cart-total" class="text-2xl font-black text-slate-900">R$ 0,00</span>
             </div>
-            <button onclick="checkoutWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+            <button onclick="checkoutWhatsApp()" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-2 active:scale-95 transition-all">
                 <i class="ph-fill ph-whatsapp-logo text-xl"></i>
                 Finalizar no WhatsApp
             </button>
+            <p class="text-xs text-center text-slate-500 mt-2">Frete calculado no chat</p>
         </div>
     </div>
-
+    
     <script>
         let appData = {};
         let cart = []; // Array de produtos {id, name, price, img}
@@ -174,28 +202,31 @@
         let isSelectionMode = false;
         let isVoteMode = false;
         let currentProduct = null;
-
+        
         window.onload = function() {
             const params = new URLSearchParams(window.location.search);
             const encoded = params.get('data');
             const picks = params.get('picks');
-
             if(encoded) {
                 try {
                     const json = decodeURIComponent(escape(atob(encoded)));
                     appData = JSON.parse(json);
-                    
+                   
                     // UI Setup
                     document.getElementById('store-name').innerText = appData.profile.name;
                     document.getElementById('store-initial').innerText = appData.profile.name.charAt(0);
+                    if (appData.profile.avatar) {
+                        document.getElementById('store-avatar').src = appData.profile.avatar;
+                        document.getElementById('store-avatar').classList.remove('hidden');
+                        document.getElementById('store-initial').classList.add('hidden');
+                    }
                     document.getElementById('collection-title').innerText = appData.collection;
-                    
+                   
                     if(appData.config.promo_text) {
                         const tag = document.getElementById('promo-tag');
                         tag.innerHTML = `<i class="ph-fill ph-gift"></i> ${appData.config.promo_text}`;
                         tag.classList.remove('hidden');
                     }
-
                     if(picks) {
                         isVoteMode = true;
                         const pickIds = picks.split(',');
@@ -204,21 +235,38 @@
                     } else if (appData.config.enable_voting) {
                         setTimeout(() => document.getElementById('help-popup').classList.remove('hidden'), 5000);
                     }
-
                     renderGrid();
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
-
-                } catch(e) { console.error(e); }
+                } catch(e) { 
+                    console.error(e); 
+                    document.getElementById('loading').innerHTML = '<p class="text-red-500">Erro ao carregar. Tente novamente.</p>';
+                }
             }
         };
-
+        
         function setupVoteUI() {
-            document.getElementById('collection-title').innerText = "Ajude sua Amiga 😍";
+            document.getElementById('collection-title').innerText = "Ajude sua Amiga a Escolher! 😍";
             document.getElementById('help-popup').classList.add('hidden');
+            // Adiciona overlay de votação
+            setTimeout(() => {
+                const cards = document.querySelectorAll('.product-card');
+                cards.forEach(card => {
+                    card.classList.add('vote-card');
+                    card.innerHTML = `
+                        <div class="vote-overlay"></div>
+                        <div class="relative bg-slate-100 product-image rounded-t-xl overflow-hidden">
+                            ${card.querySelector('img') ? card.querySelector('img').outerHTML : '<div class="w-full h-full" style="background:${appData.products.find(p => p.id == card.dataset.id).color}"></div>'}
+                            <div class="vote-check"><i class="ph-fill ph-cursor-click"></i></div>
+                        </div>
+                        ${card.querySelector('.p-2').outerHTML}
+                    `;
+                    card.onclick = () => voteForProduct(appData.products.find(p => p.id == card.dataset.id));
+                });
+            }, 100);
         }
-
-        // --- RENDER GRID ---
+        
+        // --- RENDER GRID (Ajustado para grid 3x3 e produtos menores) ---
         function renderGrid() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = '';
@@ -226,187 +274,274 @@
                 const isImage = p.color && p.color.includes('http');
                 const isSelected = selection.includes(p.id);
                 const el = document.createElement('div');
-                el.className = `masonry-item relative group bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${isSelected ? 'ring-2 ring-rose-500 transform scale-[0.98]' : ''}`;
+                el.className = `product-item product-card relative group bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 ${isSelected ? 'selected-ring ring-2 ring-rose-500 transform scale-[0.98]' : ''}`;
+                el.dataset.id = p.id;
                 el.style.animation = `fadeIn 0.5s ease-out ${idx*0.05}s forwards`;
                 el.style.opacity = '0';
-                
+               
                 el.innerHTML = `
-                    <div class="relative bg-slate-100 aspect-[3/4]">
-                        ${isImage ? `<img src="${p.color}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">` : `<div class="w-full h-full" style="background:${p.color}"></div>`}
-                        ${isSelected ? '<div class="absolute top-2 right-2 bg-rose-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md z-10"><i class="ph-bold ph-check text-xs"></i></div>' : ''}
+                    <div class="relative bg-slate-100 product-image rounded-t-xl overflow-hidden">
+                        ${isImage ? `<img src="${p.color}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="${p.name}">` : `<div class="w-full h-full" style="background:${p.color}"></div>`}
+                        ${isSelected ? '<div class="absolute top-2 right-2 bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-md z-10"><i class="ph-bold ph-check text-xs"></i></div>' : ''}
                     </div>
                     <div class="p-2">
-                        <h3 class="text-sm font-bold text-slate-800 leading-tight line-clamp-2">${p.name}</h3>
-                        <p class="text-xs text-slate-500 font-medium mt-1">R$ ${p.price}</p>
+                        <h3 class="text-xs font-bold text-slate-800 leading-tight line-clamp-2">${p.name}</h3>
+                        <p class="text-[10px] text-slate-500 font-medium mt-0.5">R$ ${p.price}</p>
                     </div>
                 `;
                 el.onclick = () => handleCardClick(p);
                 grid.appendChild(el);
             });
+            if (isSelectionMode) renderSelectionPreview();
         }
-
+        
+        function renderSelectionPreview() {
+            const preview = document.getElementById('selection-preview');
+            preview.innerHTML = '';
+            selection.forEach(id => {
+                const p = appData.products.find(prod => prod.id === id);
+                if (p) {
+                    const thumb = document.createElement('div');
+                    thumb.className = 'shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-slate-100 border-2 border-rose-200';
+                    thumb.innerHTML = p.color.includes('http') ? `<img src="${p.color}" class="w-full h-full object-cover">` : `<div class="w-full h-full" style="background:${p.color}"></div>`;
+                    preview.appendChild(thumb);
+                }
+            });
+        }
+        
         function handleCardClick(p) {
             currentProduct = p;
             if(isSelectionMode) toggleSelection(p.id);
             else if(isVoteMode) voteForProduct(p);
             else openModal(p);
         }
-
-        // --- CARRINHO (A LÓGICA NOVA) ---
+        
+        // --- CARRINHO (Lógica refinada e UI mais limpa) ---
         function toggleCart() {
             const drawer = document.getElementById('cart-drawer');
             const back = document.getElementById('cart-drawer-backdrop');
-            
-            // Verifica se está aberto (pela classe translate)
+           
             const isOpen = !drawer.classList.contains('translate-y-full') && !drawer.classList.contains('md:translate-x-full');
-
             if (isOpen) {
-                // Fecha
                 drawer.classList.add('translate-y-full', 'md:translate-x-full');
                 back.classList.add('hidden');
             } else {
-                // Abre
                 drawer.classList.remove('translate-y-full', 'md:translate-x-full');
                 back.classList.remove('hidden');
                 renderCart();
             }
         }
-
+        
         function addToCartFromModal() {
-            // Adiciona item
+            if (cart.some(item => item.id === currentProduct.id)) {
+                alert('Item já adicionado à sacola!');
+                return;
+            }
             cart.push(currentProduct);
             closeModal();
             updateCartCount();
-            
-            // Abre o carrinho automaticamente para feedback
+           
+            // Feedback visual
+            const badge = document.getElementById('cart-badge-count');
+            badge.classList.add('animate-bounce');
+            setTimeout(() => badge.classList.remove('animate-bounce'), 500);
+           
+            // Abre o carrinho automaticamente
             setTimeout(toggleCart, 300);
         }
-
+        
         function removeFromCart(index) {
             cart.splice(index, 1);
             renderCart();
             updateCartCount();
         }
-
+        
         function updateCartCount() {
             const badge = document.getElementById('cart-badge-count');
             badge.innerText = cart.length;
             if(cart.length > 0) {
                 badge.classList.remove('hidden');
-                badge.classList.add('scale-125');
-                setTimeout(() => badge.classList.remove('scale-125'), 200);
             } else {
                 badge.classList.add('hidden');
             }
         }
-
+        
         function renderCart() {
             const list = document.getElementById('cart-items');
             const empty = document.getElementById('cart-empty');
             const footer = document.getElementById('cart-footer');
             const totalEl = document.getElementById('cart-total');
-
             list.innerHTML = '';
             let total = 0;
-
             if (cart.length === 0) {
                 empty.classList.remove('hidden');
                 footer.classList.add('hidden');
                 return;
             }
-
             empty.classList.add('hidden');
             footer.classList.remove('hidden');
-
             cart.forEach((p, idx) => {
                 const priceNum = parseFloat(p.price.replace(',', '.'));
                 if(!isNaN(priceNum)) total += priceNum;
-
                 const isImage = p.color && p.color.includes('http');
-                
+               
                 const item = document.createElement('div');
-                item.className = "flex gap-3 bg-white border border-slate-100 p-2 rounded-xl";
+                item.className = "flex gap-3 bg-white border border-slate-100 p-3 rounded-xl shadow-sm hover:shadow-md transition-shadow";
                 item.innerHTML = `
-                    <div class="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden shrink-0">
-                        ${isImage ? `<img src="${p.color}" class="w-full h-full object-cover">` : `<div class="w-full h-full" style="background:${p.color}"></div>`}
+                    <div class="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+                        ${isImage ? `<img src="${p.color}" class="w-full h-full object-cover rounded-lg">` : `<div class="w-12 h-12 rounded-lg" style="background:${p.color}"></div>`}
                     </div>
-                    <div class="flex-1 flex flex-col justify-center">
-                        <h4 class="text-sm font-bold text-slate-800 line-clamp-1">${p.name}</h4>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-bold text-slate-800 line-clamp-2 mb-1">${p.name}</h4>
                         <p class="text-xs text-slate-500 font-medium">R$ ${p.price}</p>
                     </div>
-                    <button onclick="removeFromCart(${idx})" class="p-2 text-slate-300 hover:text-red-500 transition-colors">
-                        <i class="ph-bold ph-trash"></i>
+                    <button onclick="removeFromCart(${idx})" class="p-2 text-slate-400 hover:text-red-500 transition-colors self-start -mt-1" title="Remover item">
+                        <i class="ph-bold ph-trash-simple text-sm"></i>
                     </button>
                 `;
                 list.appendChild(item);
             });
-
             totalEl.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
         }
-
+        
         function checkoutWhatsApp() {
             if(cart.length === 0) return;
-            let msg = `Olá! Vi sua vitrine *${appData.collection}* e gostaria de finalizar meu pedido:\n\n`;
-            let total = 0;
+            let msg = `Olá! ❤️ Vi a vitrine *${appData.profile.name}* - *${appData.collection}* e montei esse pedido incrível:\n\n`;
             cart.forEach(p => {
-                msg += `🛍️ *${p.name}* - R$ ${p.price}\n`;
-                const v = parseFloat(p.price.replace(',', '.'));
-                if(!isNaN(v)) total += v;
+                msg += `🛍️ *${p.name}*\n   Preço: R$ ${p.price}\n\n`;
             });
-            msg += `\n💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n\nPodemos combinar a entrega?`;
-            
+            const total = cart.reduce((sum, p) => sum + parseFloat(p.price.replace(',', '.')), 0);
+            msg += `💰 *Total: R$ ${total.toFixed(2).replace('.', ',')}*\n\n`;
+            if (appData.config.promo_text) msg += `${appData.config.promo_text}!\n\n`;
+            msg += `Vamos combinar entrega e pagamento? 😊`;
+           
             const phone = appData.profile.whatsapp.replace(/\D/g,'');
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
-
+        
         // --- MODAL ---
         function openModal(p) {
-            document.getElementById('modal-img').src = p.color.includes('http') ? p.color : '';
-            document.getElementById('modal-img').style.backgroundColor = p.color;
+            const img = document.getElementById('modal-img');
+            img.src = p.color.includes('http') ? p.color : '';
+            img.alt = p.name;
+            img.style.backgroundColor = p.color.includes('http') ? 'transparent' : p.color;
             document.getElementById('modal-title').innerText = p.name;
             document.getElementById('modal-price').innerText = `R$ ${p.price}`;
             document.getElementById('product-modal').classList.remove('hidden');
+            // Scroll suave para o topo
+            document.body.style.overflow = 'hidden';
         }
-        function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
-
-        // --- SELEÇÃO ---
+        
+        function closeModal() { 
+            document.getElementById('product-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // --- SELEÇÃO (Foco aprimorado e efetivo) ---
         function startSelectionMode() {
             isSelectionMode = true;
+            selection = [];
             document.getElementById('help-popup').classList.add('hidden');
             document.getElementById('selection-bar').classList.remove('hidden');
+            document.getElementById('sel-count').innerText = '0';
+            document.getElementById('btn-share-friend').disabled = true;
+            document.getElementById('btn-share-friend').classList.add('opacity-50');
             renderGrid();
+            // Scroll para o topo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
+        
         function stopSelectionMode() {
             isSelectionMode = false;
             selection = [];
             document.getElementById('selection-bar').classList.add('hidden');
             renderGrid();
         }
+        
         function toggleSelection(id) {
-            if(selection.includes(id)) selection = selection.filter(i => i !== id);
-            else { if(selection.length >= 3) return alert("Máximo 3 itens."); selection.push(id); }
+            if(selection.includes(id)) {
+                selection = selection.filter(i => i !== id);
+            } else { 
+                if(selection.length >= 3) {
+                    // Feedback para máximo
+                    const btn = document.getElementById('btn-share-friend');
+                    btn.classList.add('animate-pulse');
+                    setTimeout(() => btn.classList.remove('animate-pulse'), 500);
+                    return; // Sem alert, mais suave
+                }
+                selection.push(id); 
+            }
             document.getElementById('sel-count').innerText = selection.length;
             const btn = document.getElementById('btn-share-friend');
-            btn.disabled = selection.length === 0;
-            btn.classList.toggle('opacity-50', selection.length === 0);
+            const canShare = selection.length > 0 && selection.length <= 3;
+            btn.disabled = !canShare;
+            btn.classList.toggle('opacity-50', !canShare);
             renderGrid();
+            renderSelectionPreview();
         }
+        
         function shareWithFriend() {
+            if (selection.length === 0) return;
             const url = new URL(window.location.href);
+            const baseUrl = url.origin + url.pathname;
+            url.searchParams.set('data', btoa(unescape(encodeURIComponent(JSON.stringify(appData)))));
             url.searchParams.set('picks', selection.join(','));
-            const text = `Amiga, socorro! 😱\n\nTô em dúvida entre esses looks da ${appData.profile.name}.\n\nClica aqui e vota no seu favorito pra mim:\n${url}`;
+            const text = `Ei, amiga! 😍\n\nTô super em dúvida com esses 3 looks da *${appData.profile.name}* na coleção *${appData.collection}*. Me ajuda a escolher o melhor? Qual você acha que fica incrível em mim?\n\nClique aqui e vote no seu favorito (é rapidinho!):\n${url}\n\nObrigadaaa! 💕 #Moda #DuvidaLook`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            // Feedback
+            const btn = document.getElementById('btn-share-friend');
+            btn.innerHTML = '<i class="ph-fill ph-check text-lg"></i> Enviado!';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="ph-fill ph-whatsapp-logo text-lg"></i> Enviar para Amigas';
+            }, 2000);
         }
+        
         function voteForProduct(p) {
-            const text = `Amiga! Votei neste aqui: *${p.name}* 😍\n\nÉ perfeito!`;
+            const text = `Amiga, olha só! Votei no *${p.name}* da *${appData.collection}* da *${appData.profile.name}* 😍\n\nÉ o look perfeito pra você! Imagina como fica incrível... O que achou? 💃\n\nSe quiser ver mais: ${window.location.origin + window.location.pathname}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+            // Feedback visual no card
+            const card = document.querySelector(`[data-id="${p.id}"]`);
+            if (card) {
+                const overlay = card.querySelector('.vote-overlay');
+                overlay.style.background = 'linear-gradient(135deg, rgba(0,255,0,0.2), rgba(0,255,0,0.1))';
+                setTimeout(() => overlay.style.background = 'linear-gradient(135deg, rgba(255,0,0,0.1), rgba(255,0,0,0.05))', 1000);
+            }
         }
+        
         function shareStore() {
-             if (navigator.share) navigator.share({ title: appData.profile.name, url: window.location.href });
-             else { navigator.clipboard.writeText(window.location.href); alert("Link copiado!"); }
+            if (navigator.share) {
+                navigator.share({ 
+                    title: `${appData.profile.name} - ${appData.collection}`, 
+                    text: `Confira essa coleção incrível da ${appData.profile.name}! Looks que vão te deixar ✨`, 
+                    url: window.location.href 
+                });
+            } else { 
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    // Toast simples
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-in slide-in-from-right';
+                    toast.innerText = 'Link copiado! Compartilhe com quem ama moda.';
+                    document.body.appendChild(toast);
+                    setTimeout(() => toast.remove(), 3000);
+                });
+            }
         }
-        function closePopup() { document.getElementById('help-popup').classList.add('hidden'); }
-
+        
+        function closePopup() { 
+            document.getElementById('help-popup').classList.add('hidden'); 
+        }
+        
+        // Fechar modal ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'product-modal') closeModal();
+        });
+        
+        // Previne zoom em inputs se necessário
+        document.addEventListener('touchstart', function(event) {
+            if (event.touches.length > 1) {
+                event.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
