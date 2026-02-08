@@ -4,43 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Vitrine</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
-        
-        /* Grid Masonry */
-        .products-grid { 
-            column-count: 2; 
-            column-gap: 12px; 
-            padding: 0 4px;
-        }
-        @media (min-width: 768px) { .products-grid { column-count: 3; column-gap: 20px; } }
-        @media (min-width: 1024px) { .products-grid { column-count: 4; column-gap: 24px; } }
-        
-        .product-item { 
-            break-inside: avoid; 
-            margin-bottom: 12px; 
-            transform: translateZ(0); 
-        }
-        
-        /* Animações */
+        .masonry-grid { column-count: 2; column-gap: 12px; padding: 0 4px; }
+        @media (min-width: 768px) { .masonry-grid { column-count: 3; column-gap: 20px; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 4; column-gap: 24px; } }
+        .product-item { break-inside: avoid; margin-bottom: 12px; transform: translateZ(0); }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
-        
         .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        
-        /* UI Elements */
         .cart-badge { position: absolute; top: -2px; right: -2px; background: #e11d48; color: white; font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(225, 29, 72, 0.4); }
         .selected-ring { box-shadow: 0 0 0 3px #e11d48; transform: scale(0.98); }
-        
-        /* Scrollbar */
         #cart-items::-webkit-scrollbar { width: 4px; }
         #cart-items::-webkit-scrollbar-track { background: #f1f1f1; }
         #cart-items::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -55,7 +33,6 @@
     </div>
 
     <div id="app" class="hidden max-w-5xl mx-auto bg-white min-h-screen shadow-2xl shadow-slate-200/50 relative">
-        
         <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between transition-all">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shadow-sm relative">
@@ -63,32 +40,22 @@
                     <div id="store-initial" class="w-full h-full flex items-center justify-center font-bold text-slate-400 text-lg">L</div>
                 </div>
                 <div>
-                    <h1 id="store-name" class="font-bold text-slate-900 leading-tight text-lg">...</h1>
+                    <h1 id="store-name" class="font-bold text-slate-900 leading-tight text-lg">Loja</h1>
                     <p class="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Coleção Online</p>
                 </div>
             </div>
-
             <div class="flex items-center gap-2">
-                <button onclick="shareStore()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors">
-                    <i class="ph-bold ph-share-network text-xl"></i>
-                </button>
-                <button onclick="toggleCart()" class="relative p-2 text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors">
-                    <i class="ph-bold ph-shopping-bag text-xl"></i>
-                    <div id="cart-badge-count" class="cart-badge hidden">0</div>
-                </button>
+                <button onclick="shareStore()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full transition-colors"><i class="ph-bold ph-share-network text-xl"></i></button>
+                <button onclick="toggleCart()" class="relative p-2 text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors"><i class="ph-bold ph-shopping-bag text-xl"></i><div id="cart-badge-count" class="cart-badge hidden">0</div></button>
             </div>
         </header>
 
         <div class="px-5 mt-6 mb-6">
             <h2 id="collection-title" class="text-3xl font-black text-slate-900 leading-none tracking-tight mb-2">...</h2>
-            <div id="promo-tag" class="hidden inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-bold border border-green-100 uppercase tracking-wide shadow-sm">
-                <i class="ph-fill ph-gift"></i> <span id="promo-text">Oferta</span>
-            </div>
+            <div id="promo-tag" class="hidden inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-bold border border-green-100 uppercase tracking-wide shadow-sm"><i class="ph-fill ph-gift"></i> <span id="promo-text">Oferta</span></div>
         </div>
 
-        <main class="px-3 pb-10">
-            <div id="products-grid" class="products-grid"></div>
-        </main>
+        <main class="px-3 pb-10"><div id="products-grid" class="products-grid"></div></main>
         
         <div id="help-popup" class="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-30 hidden slide-up">
             <div class="bg-slate-900/95 backdrop-blur-md text-white p-5 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-slate-800">
@@ -97,9 +64,7 @@
                     <p class="text-sm text-slate-200 leading-snug">Selecione 3 looks e peça a opinião das suas amigas!</p>
                 </div>
                 <div class="flex flex-col gap-2 shrink-0">
-                    <button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-900/50">
-                        Pedir Ajuda
-                    </button>
+                    <button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-900/50">Pedir Ajuda</button>
                     <button onclick="closePopup()" class="text-xs text-slate-500 hover:text-white text-center">Agora não</button>
                 </div>
             </div>
@@ -111,10 +76,7 @@
                     <span class="bg-rose-100 text-rose-700 w-8 h-8 flex items-center justify-center rounded-full font-black text-sm" id="sel-count">0</span>
                     <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">de 3 selecionados</span>
                 </div>
-                <button id="btn-share-friend" onclick="shareWithFriend()" class="flex-1 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all shadow-lg shadow-rose-200" disabled>
-                    <i class="ph-fill ph-whatsapp-logo text-lg"></i>
-                    Enviar p/ Amiga
-                </button>
+                <button id="btn-share-friend" onclick="shareWithFriend()" class="flex-1 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all shadow-lg shadow-rose-200" disabled><i class="ph-fill ph-whatsapp-logo text-lg"></i> Enviar p/ Amiga</button>
                 <button onclick="stopSelectionMode()" class="p-3 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
             </div>
         </div>
@@ -127,10 +89,7 @@
                 <button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors"><i class="ph-bold ph-x text-xl"></i></button>
                 <div class="relative flex-1 bg-slate-100 overflow-hidden"><img id="modal-img" src="" class="w-full h-full object-cover"></div>
                 <div class="bg-white p-6 shrink-0 border-t border-slate-100 pb-8">
-                    <div class="flex justify-between items-start mb-2">
-                        <h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight pr-4">...</h2>
-                        <span id="modal-price" class="text-2xl font-black text-rose-600 whitespace-nowrap">...</span>
-                    </div>
+                    <div class="flex justify-between items-start mb-2"><h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight pr-4">...</h2><span id="modal-price" class="text-2xl font-black text-rose-600 whitespace-nowrap">...</span></div>
                     <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider font-bold">Disponível para entrega</p>
                     <button onclick="addToCartFromModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all text-sm uppercase tracking-wide shadow-xl"><i class="ph-bold ph-shopping-bag text-lg"></i> Adicionar à Sacola</button>
                 </div>
@@ -165,10 +124,16 @@
         let isVoteMode = false;
         let currentProduct = null;
         
-        // --- FUNÇÃO DE DECODIFICAÇÃO SEGURA (IMPORTANTE!) ---
-        // Essa função inverte exatamente o que o App faz com emojis e acentos
+        // --- DECODE FUNCTION CORRIGIDA ---
         function decodeData(base64) {
-            const binaryString = atob(base64);
+            // 1. Reverte o URL Safety
+            let str = base64.replace(/-/g, '+').replace(/_/g, '/');
+            while (str.length % 4) str += '=';
+            
+            // 2. Decodifica Base64
+            const binaryString = atob(str);
+            
+            // 3. Decodifica UTF-8
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
                 bytes[i] = binaryString.charCodeAt(i);
@@ -183,30 +148,21 @@
 
             if(encoded) {
                 try {
-                    // Decodifica usando a função correta para UTF-8
                     const json = decodeData(encoded);
                     appData = JSON.parse(json);
                     
-                    // --- PREENCHIMENTO DOS DADOS ---
-                    
-                    // 1. Nome da Loja (Fallback para "Loja" se vier vazio)
-                    const storeName = appData.profile.name && appData.profile.name.trim() !== "" ? appData.profile.name : "Loja Virtual";
-                    document.getElementById('store-name').textContent = storeName;
-                    document.title = `${storeName} | Coleção`;
-                    
-                    // 2. Inicial do Nome
-                    document.getElementById('store-initial').textContent = storeName.charAt(0).toUpperCase();
+                    // Preenchimento dos dados
+                    const storeName = appData.profile.name || "Nossa Loja";
+                    document.getElementById('store-name').innerText = storeName;
+                    document.getElementById('store-initial').innerText = storeName.charAt(0).toUpperCase();
+                    document.title = storeName;
 
-                    // 3. Título da Coleção
-                    document.getElementById('collection-title').textContent = appData.collection || "Destaques";
-                    
-                    // 4. Promo
+                    document.getElementById('collection-title').innerText = appData.collection;
                     if(appData.config.promo_text) {
-                        document.getElementById('promo-text').textContent = appData.config.promo_text;
+                        document.getElementById('promo-text').innerText = appData.config.promo_text;
                         document.getElementById('promo-tag').classList.remove('hidden');
                     }
 
-                    // 5. Modo Votação
                     if(picks) {
                         isVoteMode = true;
                         const pickIds = picks.split(',');
@@ -220,17 +176,12 @@
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
 
-                } catch(e) { 
-                    console.error("Erro critico:", e);
-                    document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold px-10 text-center">Ops! Link corrompido ou antigo. Gere um novo link no App.</p>';
-                }
-            } else {
-                document.getElementById('loading').innerHTML = '<p class="text-slate-400 text-sm">Aguardando link...</p>';
+                } catch(e) { console.error("Decode Error", e); }
             }
         };
         
         function setupVoteUI() {
-            document.getElementById('collection-title').textContent = "Ajude sua Amiga! 😍";
+            document.getElementById('collection-title').innerText = "Ajude sua Amiga! 😍";
             document.getElementById('help-popup').classList.add('hidden');
             document.querySelector('.ph-shopping-bag').classList.replace('ph-shopping-bag', 'ph-heart');
         }
@@ -271,7 +222,6 @@
             else openModal(p);
         }
         
-        // --- CARRINHO ---
         function toggleCart() {
             if(isVoteMode) return;
             const drawer = document.getElementById('cart-drawer');
@@ -347,17 +297,17 @@
             const img = document.getElementById('modal-img');
             img.src = p.color.includes('http') ? p.color : '';
             img.style.backgroundColor = p.color.includes('http') ? 'transparent' : p.color;
-            document.getElementById('modal-title').textContent = p.name;
-            document.getElementById('modal-price').textContent = `R$ ${p.price}`;
+            document.getElementById('modal-title').innerText = p.name;
+            document.getElementById('modal-price').innerText = `R$ ${p.price}`;
             document.getElementById('product-modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
         function closePopup() { document.getElementById('help-popup').classList.add('hidden'); }
-        
         function startSelectionMode() {
             isSelectionMode = true; selection = [];
             document.getElementById('help-popup').classList.add('hidden');
             document.getElementById('selection-bar').classList.remove('hidden');
+            document.getElementById('sel-count').innerText = "0";
             renderGrid();
         }
         function stopSelectionMode() {
@@ -372,6 +322,7 @@
             const btn = document.getElementById('btn-share-friend');
             btn.disabled = selection.length === 0;
             btn.classList.toggle('opacity-50', selection.length === 0);
+            btn.classList.toggle('cursor-not-allowed', selection.length === 0);
             renderGrid();
         }
         function shareWithFriend() {
