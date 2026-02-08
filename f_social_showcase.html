@@ -7,288 +7,363 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Outfit', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
         
-        /* Masonry Grid (Estilo Pinterest) */
-        .masonry-grid {
-            column-count: 2;
-            column-gap: 12px;
-        }
-        .masonry-item {
-            break-inside: avoid;
-            margin-bottom: 12px;
-        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Grid estilo Pinterest */
+        .masonry-grid { column-count: 2; column-gap: 12px; }
+        .masonry-item { break-inside: avoid; margin-bottom: 12px; }
 
-        /* Seleção (Borda Ativa) */
-        .selected-card {
-            box-shadow: 0 0 0 3px #e11d48; /* Cor Rose */
-            transform: scale(0.98);
-        }
+        /* Animações */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* Botão Flutuante Animado */
-        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* Modal Zoom */
-        .modal-open { overflow: hidden; }
-        .backdrop-blur { backdrop-filter: blur(8px); }
+        /* Estado Selecionado (Modo Amiga) */
+        .selected-ring { box-shadow: 0 0 0 3px #e11d48; transform: scale(0.98); }
+        
+        /* Badge do Carrinho */
+        .cart-badge { position: absolute; top: -5px; right: -5px; background: #e11d48; color: white; font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
-<body class="pb-32">
+<body class="pb-28">
 
-    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-        <div class="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+    <div id="loading" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
+        <div class="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <div id="app" class="hidden opacity-0 transition-opacity duration-500">
+    <div id="app" class="hidden">
         
-        <header class="px-5 pt-8 pb-4 bg-white sticky top-0 z-30 bg-opacity-90 backdrop-blur-md">
-            <div class="flex items-center justify-between">
+        <header class="bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-slate-100 px-5 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shadow-sm border border-slate-200">
+                    <img id="store-avatar" src="" class="w-full h-full object-cover hidden">
+                    <div id="store-initial" class="w-full h-full flex items-center justify-center font-bold text-slate-400">L</div>
+                </div>
                 <div>
-                    <h1 id="page-title" class="text-2xl font-black text-slate-900 leading-none">Coleção</h1>
-                    <p id="store-name" class="text-xs font-medium text-slate-400 mt-1 uppercase tracking-widest">Loja</p>
-                </div>
-                <div id="selection-badge" class="hidden bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-bold">
-                    <span id="sel-count">0</span>/3 selecionados
+                    <h1 id="store-name" class="font-bold text-slate-900 leading-tight text-lg">Loja</h1>
+                    <p class="text-xs text-slate-400 font-medium tracking-wide">COLEÇÃO ONLINE</p>
                 </div>
             </div>
-            
-            <div id="friend-context" class="hidden mt-4 bg-rose-50 border border-rose-100 p-4 rounded-xl">
-                <p class="text-sm text-rose-800 font-medium">
-                    👋 <span class="font-bold">Oie!</span> Sua amiga está em dúvida entre esses looks. Clique no seu favorito para ajudar!
-                </p>
-            </div>
+
+            <button onclick="openCart()" class="relative p-2 rounded-full hover:bg-slate-50 transition-colors">
+                <i class="ph ph-shopping-bag text-2xl text-slate-800"></i>
+                <div id="cart-count" class="cart-badge hidden">0</div>
+            </button>
         </header>
 
-        <main class="px-3 mt-2">
+        <div class="px-5 mt-6 mb-4">
+            <h2 id="collection-title" class="text-3xl font-black text-slate-900 leading-none">...</h2>
+            <div id="promo-tag" class="hidden inline-block mt-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-100">
+                🚚 Frete Grátis
+            </div>
+        </div>
+
+        <main class="px-3">
             <div id="products-grid" class="masonry-grid">
                 </div>
         </main>
 
-        <div id="action-bar" class="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-white via-white to-transparent z-40 hidden slide-up">
-            
-            <button id="btn-ask-friend" onclick="shareWithFriend()" class="w-full bg-rose-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-rose-500/30 flex items-center justify-center gap-2 active:scale-95 transition-transform">
-                <i class="ph-fill ph-chat-circle-heart text-xl"></i>
-                Pedir opinião para Amiga
-            </button>
+        <div id="help-popup" class="fixed bottom-24 left-4 right-4 z-40 hidden slide-up">
+            <div class="bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4">
+                <div class="flex-1">
+                    <p class="text-sm font-bold text-rose-300 mb-0.5">🤔 Em dúvida?</p>
+                    <p class="text-xs text-slate-300 leading-tight">Selecione até 3 favoritos e peça a opinião das suas amigas!</p>
+                </div>
+                <button onclick="startSelectionMode()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shrink-0">
+                    Escolher 3
+                </button>
+                <button onclick="closePopup()" class="text-slate-500 p-1"><i class="ph ph-x"></i></button>
+            </div>
+        </div>
 
-            <button id="btn-vote" class="hidden w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2">
-                <i class="ph-fill ph-check-circle text-xl"></i>
-                Votar neste Look
+        <div id="selection-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-50 hidden slide-up shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            <div class="flex items-center justify-between gap-4">
+                <div class="text-sm font-bold text-slate-600">
+                    <span id="sel-count" class="text-rose-600 text-lg">0</span>/3 selecionados
+                </div>
+                <button id="btn-share-friend" onclick="shareWithFriend()" class="flex-1 bg-rose-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 opacity-50 cursor-not-allowed" disabled>
+                    <i class="ph-fill ph-whatsapp-logo text-lg"></i>
+                    Enviar p/ Amiga
+                </button>
+                <button onclick="stopSelectionMode()" class="p-3 text-slate-400 bg-slate-100 rounded-xl"><i class="ph-bold ph-x"></i></button>
+            </div>
+        </div>
+
+        <div id="checkout-bar" class="fixed bottom-0 left-0 right-0 p-4 z-40 bg-gradient-to-t from-white via-white to-transparent hidden">
+            <button onclick="checkout()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                <span>Finalizar Compra</span>
+                <i class="ph-bold ph-arrow-right"></i>
             </button>
         </div>
 
     </div>
 
     <div id="product-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur" onclick="closeModal()"></div>
-        
-        <div class="absolute inset-x-0 bottom-0 top-10 bg-white rounded-t-3xl overflow-hidden flex flex-col transition-transform duration-300 transform translate-y-0">
-            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 bg-black/10 p-2 rounded-full backdrop-blur-sm">
-                <i class="ph-bold ph-x text-white"></i>
-            </button>
-
-            <div class="flex-1 bg-slate-100 relative">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+        <div class="absolute inset-x-0 bottom-0 bg-white rounded-t-3xl overflow-hidden shadow-2xl transition-transform duration-300 translate-y-0 max-h-[90vh] flex flex-col">
+            
+            <div class="relative h-80 bg-slate-100 shrink-0">
                 <img id="modal-img" src="" class="w-full h-full object-cover">
+                <button onclick="closeModal()" class="absolute top-4 right-4 bg-white/80 p-2 rounded-full shadow-sm text-slate-900"><i class="ph-bold ph-x"></i></button>
             </div>
 
-            <div class="p-6 bg-white shrink-0 pb-10">
-                <div class="flex justify-between items-start mb-4">
-                    <h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight">Nome do Produto</h2>
-                    <span id="modal-price" class="text-lg font-bold text-slate-600">R$ 00</span>
+            <div class="p-6 overflow-y-auto">
+                <div class="flex justify-between items-start mb-2">
+                    <h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight">...</h2>
+                    <span id="modal-price" class="text-xl font-black text-rose-600 whitespace-nowrap">...</span>
                 </div>
-                
-                <button id="modal-select-btn" onclick="toggleSelectionFromModal()" class="w-full py-4 rounded-xl font-bold border-2 border-slate-900 text-slate-900 flex items-center justify-center gap-2">
-                    Selecionar Opção
+                <p class="text-sm text-slate-500 mb-6 leading-relaxed">Design exclusivo da coleção. Perfeito para ocasiões especiais.</p>
+
+                <button id="modal-action-btn" onclick="addToCartFromModal()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                    <i class="ph-bold ph-plus"></i> Adicionar à Sacola
                 </button>
             </div>
         </div>
     </div>
 
     <script>
+        // ESTADO GLOBAL
         let appData = {};
-        let selectedIds = [];
-        let isFriendMode = false;
-        let currentModalId = null;
+        let cart = [];
+        let selection = [];
+        let isSelectionMode = false;
+        let isVoteMode = false; // Modo Amiga (recebeu link)
+        let currentProduct = null;
 
-        // --- 1. INICIALIZAÇÃO ---
-        function init() {
+        // --- 1. BOOTSTRAP ---
+        window.onload = function() {
             const params = new URLSearchParams(window.location.search);
-            const rawData = params.get('data');
-            const picks = params.get('picks'); // IDs que a amiga deve ver
+            const encoded = params.get('data');
+            const picks = params.get('picks');
 
-            if (rawData) {
+            if(encoded) {
                 try {
-                    const json = decodeURIComponent(escape(atob(rawData)));
+                    const json = decodeURIComponent(escape(atob(encoded)));
                     appData = JSON.parse(json);
                     
-                    // Verifica se é "Modo Amiga"
-                    if (picks) {
-                        isFriendMode = true;
+                    // Configura Header
+                    document.getElementById('store-name').innerText = appData.profile.name;
+                    document.getElementById('collection-title').innerText = appData.collection;
+                    
+                    // Promo Text
+                    if(appData.config.promo_text) {
+                        const tag = document.getElementById('promo-tag');
+                        tag.innerText = appData.config.promo_text;
+                        tag.classList.remove('hidden');
+                    }
+
+                    // Se tiver PICKS, ativa Modo Votação (Amiga)
+                    if(picks) {
+                        isVoteMode = true;
                         const pickIds = picks.split(',');
-                        // Filtra apenas os produtos que a amiga selecionou
+                        // Filtra apenas os selecionados
                         appData.products = appData.products.filter(p => pickIds.includes(p.id.toString()));
-                        setupFriendView();
+                        setupVoteMode();
                     } else {
-                        setupShopperView();
+                        // Modo Normal: Mostra Popup de ajuda após 4s
+                        if(appData.config.enable_voting) {
+                            setTimeout(() => {
+                                document.getElementById('help-popup').classList.remove('hidden');
+                            }, 4000);
+                        }
                     }
 
                     renderGrid();
-                    
-                    // Mostra App
                     document.getElementById('loading').classList.add('hidden');
-                    const app = document.getElementById('app');
-                    app.classList.remove('hidden');
-                    setTimeout(() => app.classList.remove('opacity-0'), 50);
+                    document.getElementById('app').classList.remove('hidden');
 
-                } catch (e) {
-                    console.error("Erro dados", e);
-                    alert("Link inválido ou expirado.");
+                } catch(e) {
+                    alert("Link inválido.");
+                    console.error(e);
                 }
             }
+        };
+
+        function setupVoteMode() {
+            document.getElementById('collection-title').innerText = "Ajude sua Amiga 😍";
+            document.getElementById('help-popup').classList.add('hidden'); // Sem popup
+            // Muda ícone da sacola para "Info"
+            document.querySelector('.ph-shopping-bag').classList.replace('ph-shopping-bag', 'ph-info');
         }
 
-        function setupShopperView() {
-            document.getElementById('page-title').innerText = appData.collection;
-            document.getElementById('store-name').innerText = appData.profile.name;
-            document.getElementById('selection-badge').classList.remove('hidden');
-        }
-
-        function setupFriendView() {
-            document.getElementById('page-title').innerText = "Ajude sua Amiga";
-            document.getElementById('friend-context').classList.remove('hidden');
-            // No modo amiga, o botão de ação muda (Aparece dinamicamente ao selecionar)
-        }
-
-        // --- 2. RENDERIZAÇÃO (Masonry) ---
+        // --- 2. RENDER GRID ---
         function renderGrid() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = '';
 
-            appData.products.forEach(p => {
-                const isSelected = selectedIds.includes(p.id);
+            appData.products.forEach((p, idx) => {
                 const isImage = p.color && p.color.includes('http');
+                const isSelected = selection.includes(p.id);
                 
-                // Card Minimalista
-                const div = document.createElement('div');
-                div.className = `masonry-item bg-white rounded-xl overflow-hidden transition-all duration-200 ${isSelected ? 'selected-card' : ''}`;
-                div.onclick = () => isFriendMode ? voteProduct(p) : openModal(p);
+                const card = document.createElement('div');
+                card.className = `masonry-item bg-white p-2 rounded-2xl shadow-sm border border-slate-100 fade-in transition-all duration-200 ${isSelected ? 'selected-ring' : ''}`;
+                card.style.animationDelay = `${idx * 50}ms`;
+                card.onclick = () => handleCardClick(p);
 
-                const mediaHtml = isImage 
-                    ? `<img src="${p.color}" class="w-full h-auto object-cover" loading="lazy">`
-                    : `<div class="w-full h-40" style="background-color:${p.color}"></div>`;
+                // Mídia
+                let mediaHTML = isImage 
+                    ? `<img src="${p.color}" class="w-full rounded-xl aspect-[3/4] object-cover bg-slate-100">`
+                    : `<div class="w-full aspect-[3/4] rounded-xl bg-slate-100" style="background-color:${p.color}"></div>`;
 
-                // Badge de Seleção (Check)
-                const checkHtml = isSelected 
-                    ? `<div class="absolute top-2 right-2 bg-rose-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md"><i class="ph-bold ph-check"></i></div>`
-                    : '';
+                // Botão de ação no card (depende do modo)
+                let icon = isVoteMode ? 'ph-heart' : 'ph-plus';
+                if(isSelectionMode) icon = isSelected ? 'ph-check' : 'ph-circle';
 
-                div.innerHTML = `
+                card.innerHTML = `
                     <div class="relative">
-                        ${mediaHtml}
-                        ${!isFriendMode ? checkHtml : ''} 
+                        ${mediaHTML}
+                        <button class="absolute bottom-2 right-2 bg-white w-8 h-8 rounded-full shadow-md flex items-center justify-center text-slate-900">
+                            <i class="ph-bold ${icon} ${isSelected ? 'text-rose-600' : ''}"></i>
+                        </button>
                     </div>
-                    <div class="p-3">
-                        <h3 class="font-bold text-slate-800 text-sm leading-tight mb-1">${p.name}</h3>
-                        <p class="text-xs text-slate-500 font-medium">R$ ${p.price}</p>
+                    <div class="px-1 pt-2 pb-1">
+                        <h3 class="font-bold text-slate-900 text-sm leading-tight line-clamp-2">${p.name}</h3>
+                        <p class="text-xs text-slate-500 font-semibold mt-0.5">R$ ${p.price}</p>
                     </div>
                 `;
-                grid.id = `card-${p.id}`;
-                grid.appendChild(div);
+                grid.appendChild(card);
             });
         }
 
-        // --- 3. LÓGICA DE SELEÇÃO E MODAL ---
+        // --- 3. INTERACTIONS ---
 
+        function handleCardClick(product) {
+            currentProduct = product;
+
+            if (isSelectionMode) {
+                // Lógica de Seleção (Modo Ajuda)
+                toggleSelection(product.id);
+            } else if (isVoteMode) {
+                // Lógica de Voto (Amiga)
+                voteForProduct(product);
+            } else {
+                // Lógica de Compra (Normal)
+                openModal(product);
+            }
+        }
+
+        // --- A. FLUXO COMPRA (NORMAL) ---
         function openModal(product) {
-            currentModalId = product.id;
-            
-            // Preenche Modal
-            document.getElementById('modal-img').src = product.color.includes('http') ? product.color : ''; // Fallback de cor se precisar
+            document.getElementById('modal-img').src = product.color.includes('http') ? product.color : '';
             document.getElementById('modal-img').style.backgroundColor = product.color;
             document.getElementById('modal-title').innerText = product.name;
             document.getElementById('modal-price').innerText = `R$ ${product.price}`;
-
-            // Estado do Botão no Modal
-            updateModalBtn();
-
             document.getElementById('product-modal').classList.remove('hidden');
-            document.body.classList.add('modal-open');
         }
 
         function closeModal() {
             document.getElementById('product-modal').classList.add('hidden');
-            document.body.classList.remove('modal-open');
         }
 
-        function updateModalBtn() {
-            const btn = document.getElementById('modal-select-btn');
-            if (selectedIds.includes(currentModalId)) {
-                btn.innerText = "Remover da Lista";
-                btn.className = "w-full py-4 rounded-xl font-bold bg-rose-100 text-rose-700";
-            } else {
-                btn.innerText = selectedIds.length >= 3 ? "Lista Cheia (Max 3)" : "Selecionar Opção";
-                btn.className = "w-full py-4 rounded-xl font-bold bg-slate-900 text-white";
-                if(selectedIds.length >= 3) btn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
+        function addToCartFromModal() {
+            cart.push(currentProduct);
+            updateCartUI();
+            closeModal();
+            // Feedback visual
+            const badge = document.getElementById('cart-count');
+            badge.classList.add('scale-125');
+            setTimeout(() => badge.classList.remove('scale-125'), 200);
         }
 
-        function toggleSelectionFromModal() {
-            if (selectedIds.includes(currentModalId)) {
-                selectedIds = selectedIds.filter(id => id !== currentModalId);
-            } else {
-                if (selectedIds.length >= 3) return alert("Escolha no máximo 3 opções para mandar para sua amiga.");
-                selectedIds.push(currentModalId);
-            }
+        function updateCartUI() {
+            const badge = document.getElementById('cart-count');
+            const bar = document.getElementById('checkout-bar');
             
-            updateModalBtn();
-            renderGrid(); // Atualiza os checks no grid
-            updateUI();
-            
-            // Feedback tátil/visual e fecha
-            setTimeout(closeModal, 200);
-        }
-
-        function updateUI() {
-            // Atualiza contador
-            document.getElementById('sel-count').innerText = selectedIds.length;
-            
-            // Mostra/Oculta Barra de Ação
-            const bar = document.getElementById('action-bar');
-            if (selectedIds.length > 0) {
+            badge.innerText = cart.length;
+            if(cart.length > 0) {
+                badge.classList.remove('hidden');
                 bar.classList.remove('hidden');
             } else {
-                bar.classList.add('hidden');
+                badge.classList.add('hidden');
             }
         }
 
-        // --- 4. AÇÕES FINAIS (COMPARTILHAR E VOTAR) ---
+        function checkout() {
+            // Gera pedido no WhatsApp
+            let msg = `Olá! Vi sua vitrine *${appData.collection}* e quero pedir:\n\n`;
+            let total = 0;
+            
+            cart.forEach(p => {
+                msg += `▪️ ${p.name} - R$ ${p.price}\n`;
+                // Tenta somar se preço for numérico limpo, senão ignora
+                const val = parseFloat(p.price.replace(',', '.'));
+                if(!isNaN(val)) total += val;
+            });
+
+            msg += `\n*Total Aprox: R$ ${total.toFixed(2).replace('.', ',')}*`;
+            
+            const num = appData.profile.whatsapp.replace(/\D/g,'');
+            window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+
+        // --- B. FLUXO SELEÇÃO (AJUDA) ---
+        function startSelectionMode() {
+            isSelectionMode = true;
+            document.getElementById('help-popup').classList.add('hidden');
+            document.getElementById('selection-bar').classList.remove('hidden');
+            document.getElementById('checkout-bar').classList.add('hidden'); // Esconde checkout se tiver
+            renderGrid(); // Atualiza ícones para checkbox
+        }
+
+        function stopSelectionMode() {
+            isSelectionMode = false;
+            selection = [];
+            document.getElementById('selection-bar').classList.add('hidden');
+            renderGrid();
+            updateCartUI(); // Restaura checkout se tiver itens
+        }
+
+        function toggleSelection(id) {
+            if(selection.includes(id)) {
+                selection = selection.filter(i => i !== id);
+            } else {
+                if(selection.length >= 3) return alert("Máximo de 3 itens para não confundir sua amiga! 😉");
+                selection.push(id);
+            }
+            updateSelectionUI();
+            renderGrid();
+        }
+
+        function updateSelectionUI() {
+            document.getElementById('sel-count').innerText = selection.length;
+            const btn = document.getElementById('btn-share-friend');
+            
+            if(selection.length > 0) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
 
         function shareWithFriend() {
-            // Gera URL para a amiga (mantém o data original + adiciona picks)
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('picks', selectedIds.join(','));
+            // Gera URL atual + Picks
+            const url = new URL(window.location.href);
+            url.searchParams.set('picks', selection.join(','));
             
-            const friendLink = currentUrl.toString();
-            
-            const text = `Amiga, me ajuda! 😍\n\nTô em dúvida entre esses ${selectedIds.length} looks.\n\nAbre aí e vota no que você prefere:\n${friendLink}`;
-            
-            // Abre WhatsApp
+            const text = `Amiga, me ajuda! 😍\n\nTô em dúvida entre esses looks.\n\nClica aqui e vota no seu preferido:\n${url.toString()}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        function voteProduct(product) {
-            // A amiga clica no produto para votar
-            const text = `Oie! Amei esse aqui: *${product.name}*! 😍\n\nAcho que super combina com você.`;
+        // --- C. FLUXO VOTAÇÃO (AMIGA) ---
+        function voteForProduct(product) {
+            const text = `Oie! Votei neste aqui: *${product.name}* 😍\n\nAchei a sua cara!`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        window.onload = init;
+        function closePopup() {
+            document.getElementById('help-popup').classList.add('hidden');
+        }
 
     </script>
 </body>
