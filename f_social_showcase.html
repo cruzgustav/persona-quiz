@@ -3,36 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vitrine</title>
+    <title>Carregando...</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
-        .masonry-grid { column-count: 2; column-gap: 12px; padding: 0 4px; }
-        @media (min-width: 768px) { .masonry-grid { column-count: 3; column-gap: 20px; } }
-        @media (min-width: 1024px) { .masonry-grid { column-count: 4; column-gap: 24px; } }
+        
+        /* Grid */
+        .products-grid { column-count: 2; column-gap: 12px; padding: 0 4px; }
+        @media (min-width: 768px) { .products-grid { column-count: 3; column-gap: 20px; } }
+        @media (min-width: 1024px) { .products-grid { column-count: 4; column-gap: 24px; } }
         .product-item { break-inside: avoid; margin-bottom: 12px; transform: translateZ(0); }
-        .fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; transform: translateY(20px); }
+        
+        /* Animações */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        /* UI */
         .cart-badge { position: absolute; top: -2px; right: -2px; background: #e11d48; color: white; font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(225, 29, 72, 0.4); }
         .selected-ring { box-shadow: 0 0 0 3px #e11d48; transform: scale(0.98); }
-        #cart-items::-webkit-scrollbar { width: 4px; }
-        #cart-items::-webkit-scrollbar-track { background: #f1f1f1; }
-        #cart-items::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-gray-50 pb-28">
 
-    <div id="loading" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
-        <div class="flex flex-col items-center gap-3">
+    <div id="loading" class="fixed inset-0 bg-white z-50 flex items-center justify-center text-center px-4">
+        <div class="flex flex-col items-center gap-4">
             <div class="w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
+            <p id="loading-text" class="text-xs font-bold text-slate-400 uppercase tracking-widest">Carregando Vitrine...</p>
         </div>
     </div>
 
     <div id="app" class="hidden max-w-5xl mx-auto bg-white min-h-screen shadow-2xl shadow-slate-200/50 relative">
+        
         <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-5 py-4 flex items-center justify-between transition-all">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-200 shadow-sm relative">
@@ -40,7 +47,7 @@
                     <div id="store-initial" class="w-full h-full flex items-center justify-center font-bold text-slate-400 text-lg">L</div>
                 </div>
                 <div>
-                    <h1 id="store-name" class="font-bold text-slate-900 leading-tight text-lg">Loja</h1>
+                    <h1 id="store-name" class="font-bold text-slate-900 leading-tight text-lg">...</h1>
                     <p class="text-[10px] text-slate-400 font-bold tracking-wider uppercase">Coleção Online</p>
                 </div>
             </div>
@@ -52,68 +59,21 @@
 
         <div class="px-5 mt-6 mb-6">
             <h2 id="collection-title" class="text-3xl font-black text-slate-900 leading-none tracking-tight mb-2">...</h2>
-            <div id="promo-tag" class="hidden inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-bold border border-green-100 uppercase tracking-wide shadow-sm"><i class="ph-fill ph-gift"></i> <span id="promo-text">Oferta</span></div>
+            <div id="promo-tag" class="hidden inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-[11px] font-bold border border-green-100 uppercase tracking-wide shadow-sm">
+                <i class="ph-fill ph-gift"></i> <span id="promo-text">Oferta</span>
+            </div>
         </div>
 
         <main class="px-3 pb-10"><div id="products-grid" class="products-grid"></div></main>
         
-        <div id="help-popup" class="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-30 hidden slide-up">
-            <div class="bg-slate-900/95 backdrop-blur-md text-white p-5 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-slate-800">
-                <div class="flex-1">
-                    <p class="text-lg font-bold text-rose-300 mb-1">Em dúvida?</p>
-                    <p class="text-sm text-slate-200 leading-snug">Selecione 3 looks e peça a opinião das suas amigas!</p>
-                </div>
-                <div class="flex flex-col gap-2 shrink-0">
-                    <button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-900/50">Pedir Ajuda</button>
-                    <button onclick="closePopup()" class="text-xs text-slate-500 hover:text-white text-center">Agora não</button>
-                </div>
-            </div>
-        </div>
+        <div id="help-popup" class="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-30 hidden slide-up"><div class="bg-slate-900/95 backdrop-blur-md text-white p-5 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-slate-800"><div class="flex-1"><p class="text-lg font-bold text-rose-300 mb-1">Em dúvida?</p><p class="text-sm text-slate-200 leading-snug">Selecione 3 looks e peça a opinião das suas amigas!</p></div><div class="flex flex-col gap-2 shrink-0"><button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-900/50">Pedir Ajuda</button><button onclick="closePopup()" class="text-xs text-slate-500 hover:text-white text-center">Agora não</button></div></div></div>
         
-        <div id="selection-bar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-4 z-40 hidden shadow-[0_-5px_30px_rgba(0,0,0,0.1)] md:max-w-5xl md:mx-auto">
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-2">
-                    <span class="bg-rose-100 text-rose-700 w-8 h-8 flex items-center justify-center rounded-full font-black text-sm" id="sel-count">0</span>
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wide">de 3 selecionados</span>
-                </div>
-                <button id="btn-share-friend" onclick="shareWithFriend()" class="flex-1 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all shadow-lg shadow-rose-200" disabled><i class="ph-fill ph-whatsapp-logo text-lg"></i> Enviar p/ Amiga</button>
-                <button onclick="stopSelectionMode()" class="p-3 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors"><i class="ph-bold ph-x text-lg"></i></button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="product-modal" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
-        <div class="absolute inset-0 flex items-center justify-center p-0 md:p-8 pointer-events-none">
-            <div class="bg-white w-full h-full md:h-auto md:max-w-lg md:rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto relative animate-[fadeIn_0.3s_ease-out]">
-                <button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors"><i class="ph-bold ph-x text-xl"></i></button>
-                <div class="relative flex-1 bg-slate-100 overflow-hidden"><img id="modal-img" src="" class="w-full h-full object-cover"></div>
-                <div class="bg-white p-6 shrink-0 border-t border-slate-100 pb-8">
-                    <div class="flex justify-between items-start mb-2"><h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight pr-4">...</h2><span id="modal-price" class="text-2xl font-black text-rose-600 whitespace-nowrap">...</span></div>
-                    <p class="text-xs text-slate-400 mb-6 uppercase tracking-wider font-bold">Disponível para entrega</p>
-                    <button onclick="addToCartFromModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all text-sm uppercase tracking-wide shadow-xl"><i class="ph-bold ph-shopping-bag text-lg"></i> Adicionar à Sacola</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        <div id="selection-bar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-4 z-40 hidden shadow-[0_-5px_30px_rgba(0,0,0,0.1)] md:max-w-5xl md:mx-auto"><div class="flex items-center justify-between gap-4"><div class="flex items-center gap-2"><span class="bg-rose-100 text-rose-700 w-8 h-8 flex items-center justify-center rounded-full font-black text-sm" id="sel-count">0</span><span class="text-xs font-bold text-slate-500 uppercase tracking-wide">de 3 selecionados</span></div><button id="btn-share-friend" onclick="shareWithFriend()" class="flex-1 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed transition-all shadow-lg shadow-rose-200" disabled><i class="ph-fill ph-whatsapp-logo text-lg"></i> Enviar p/ Amiga</button><button onclick="stopSelectionMode()" class="p-3 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors"><i class="ph-bold ph-x text-lg"></i></button></div></div>
+        
+        <div id="product-modal" class="fixed inset-0 z-50 hidden"><div class="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity" onclick="closeModal()"></div><div class="absolute inset-0 flex items-center justify-center p-0 md:p-8 pointer-events-none"><div class="bg-white w-full h-full md:h-auto md:max-w-lg md:rounded-3xl shadow-2xl overflow-hidden flex flex-col pointer-events-auto relative animate-[fadeIn_0.3s_ease-out]"><button onclick="closeModal()" class="absolute top-4 right-4 z-20 bg-black/20 hover:bg-black/40 text-white p-2 rounded-full backdrop-blur-md transition-colors"><i class="ph-bold ph-x text-xl"></i></button><div class="relative flex-1 bg-slate-100 overflow-hidden"><img id="modal-img" src="" class="w-full h-full object-cover"></div><div class="bg-white p-6 shrink-0 border-t border-slate-100 pb-8"><div class="flex justify-between items-start mb-2"><h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight pr-4">...</h2><span id="modal-price" class="text-2xl font-black text-rose-600 whitespace-nowrap">...</span></div><p class="text-xs text-slate-400 mb-6 uppercase tracking-wider font-bold">Disponível</p><button onclick="addToCartFromModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all text-sm uppercase tracking-wide shadow-xl"><i class="ph-bold ph-shopping-bag text-lg"></i> Adicionar à Sacola</button></div></div></div></div>
 
-    <div id="cart-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity backdrop-blur-sm" onclick="toggleCart()"></div>
-    <div id="cart-drawer" class="fixed inset-x-0 bottom-0 md:top-0 md:right-0 md:left-auto md:w-[400px] md:h-full bg-white z-[70] rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none shadow-2xl transform translate-y-full md:translate-x-full transition-transform duration-300 flex flex-col h-[85vh] md:h-screen">
-        <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-white rounded-t-3xl">
-            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2"><span class="bg-rose-100 p-1.5 rounded-lg"><i class="ph-fill ph-shopping-bag text-rose-600"></i></span> Sua Sacola</h2>
-            <button onclick="toggleCart()" class="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full"><i class="ph-bold ph-x"></i></button>
-        </div>
-        <div id="cart-empty" class="flex-1 flex flex-col items-center justify-center text-center p-8 hidden">
-            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300"><i class="ph-fill ph-basket text-4xl"></i></div>
-            <p class="text-slate-900 font-bold mb-1 text-lg">Sacola Vazia</p>
-            <p class="text-sm text-slate-400">Explore a vitrine e adicione seus favoritos.</p>
-            <button onclick="toggleCart()" class="mt-6 text-rose-600 font-bold text-sm border border-rose-200 px-6 py-2 rounded-full hover:bg-rose-50 transition-colors">Voltar para Loja</button>
-        </div>
-        <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
-        <div id="cart-footer" class="p-6 border-t border-slate-100 bg-slate-50 hidden shrink-0 pb-10">
-            <div class="flex justify-between items-end mb-4"><span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total do Pedido</span><span id="cart-total" class="text-2xl font-black text-slate-900">R$ 0,00</span></div>
-            <button onclick="checkoutWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-all"><i class="ph-fill ph-whatsapp-logo text-xl"></i> <div class="text-left leading-none"><div class="text-[10px] font-normal opacity-90">Finalizar pedido no</div><div class="text-sm">WhatsApp</div></div></button>
-        </div>
+        <div id="cart-drawer-backdrop" class="fixed inset-0 bg-black/50 z-[60] hidden transition-opacity backdrop-blur-sm" onclick="toggleCart()"></div>
+        <div id="cart-drawer" class="fixed inset-x-0 bottom-0 md:top-0 md:right-0 md:left-auto md:w-[400px] md:h-full bg-white z-[70] rounded-t-3xl md:rounded-l-3xl md:rounded-tr-none shadow-2xl transform translate-y-full md:translate-x-full transition-transform duration-300 flex flex-col h-[85vh] md:h-screen"><div class="p-5 border-b border-slate-100 flex items-center justify-between bg-white rounded-t-3xl"><h2 class="text-lg font-bold text-slate-900 flex items-center gap-2"><span class="bg-rose-100 p-1.5 rounded-lg"><i class="ph-fill ph-shopping-bag text-rose-600"></i></span> Sua Sacola</h2><button onclick="toggleCart()" class="text-slate-400 hover:text-slate-600 bg-slate-50 p-2 rounded-full"><i class="ph-bold ph-x"></i></button></div><div id="cart-empty" class="flex-1 flex flex-col items-center justify-center text-center p-8 hidden"><div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-300"><i class="ph-fill ph-basket text-4xl"></i></div><p class="text-slate-900 font-bold mb-1 text-lg">Sacola Vazia</p><p class="text-sm text-slate-400">Explore a vitrine e adicione seus favoritos.</p><button onclick="toggleCart()" class="mt-6 text-rose-600 font-bold text-sm border border-rose-200 px-6 py-2 rounded-full hover:bg-rose-50 transition-colors">Voltar para Loja</button></div><div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4"></div><div id="cart-footer" class="p-6 border-t border-slate-100 bg-slate-50 hidden shrink-0 pb-10"><div class="flex justify-between items-end mb-4"><span class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total do Pedido</span><span id="cart-total" class="text-2xl font-black text-slate-900">R$ 0,00</span></div><button onclick="checkoutWhatsApp()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-3 active:scale-95 transition-all"><i class="ph-fill ph-whatsapp-logo text-xl"></i> <div class="text-left leading-none"><div class="text-[10px] font-normal opacity-90">Finalizar pedido no</div><div class="text-sm">WhatsApp</div></div></button></div></div>
     </div>
     
     <script>
@@ -124,21 +84,21 @@
         let isVoteMode = false;
         let currentProduct = null;
         
-        // --- DECODE FUNCTION CORRIGIDA ---
+        // --- FUNÇÃO DE DECODIFICAÇÃO (AJUSTADA) ---
         function decodeData(base64) {
-            // 1. Reverte o URL Safety
+            // 1. Corrige caracteres URL Safe para Base64 padrão
             let str = base64.replace(/-/g, '+').replace(/_/g, '/');
+            // 2. Adiciona Padding se faltar
             while (str.length % 4) str += '=';
             
-            // 2. Decodifica Base64
-            const binaryString = atob(str);
-            
-            // 3. Decodifica UTF-8
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
+            // 3. Decodifica (atob -> escape -> decodeURIComponent para lidar com acentos UTF-8)
+            try {
+                return decodeURIComponent(escape(atob(str)));
+            } catch(e) {
+                console.warn("Decode method 1 failed, trying fallback", e);
+                // Fallback simples caso o formato seja diferente
+                return atob(str);
             }
-            return new TextDecoder().decode(bytes);
         }
 
         window.onload = function() {
@@ -146,18 +106,18 @@
             const encoded = params.get('data');
             const picks = params.get('picks');
 
-            if(encoded) {
+            if (encoded) {
                 try {
                     const json = decodeData(encoded);
                     appData = JSON.parse(json);
                     
-                    // Preenchimento dos dados
+                    // Inicializa UI
                     const storeName = appData.profile.name || "Nossa Loja";
                     document.getElementById('store-name').innerText = storeName;
                     document.getElementById('store-initial').innerText = storeName.charAt(0).toUpperCase();
                     document.title = storeName;
-
-                    document.getElementById('collection-title').innerText = appData.collection;
+                    document.getElementById('collection-title').innerText = appData.collection || "Coleção";
+                    
                     if(appData.config.promo_text) {
                         document.getElementById('promo-text').innerText = appData.config.promo_text;
                         document.getElementById('promo-tag').classList.remove('hidden');
@@ -176,10 +136,18 @@
                     document.getElementById('loading').classList.add('hidden');
                     document.getElementById('app').classList.remove('hidden');
 
-                } catch(e) { console.error("Decode Error", e); }
+                } catch(e) { 
+                    console.error("Erro fatal:", e);
+                    // Mostra erro amigável em vez de travar
+                    document.getElementById('loading-text').innerText = "Link Inválido ou Expirado";
+                    document.getElementById('loading-text').classList.add('text-red-500');
+                }
+            } else {
+                document.getElementById('loading-text').innerText = "Aguardando Link...";
             }
         };
         
+        // --- FUNÇÕES DE UI (IGUAIS AO ANTERIOR) ---
         function setupVoteUI() {
             document.getElementById('collection-title').innerText = "Ajude sua Amiga! 😍";
             document.getElementById('help-popup').classList.add('hidden');
@@ -193,7 +161,7 @@
                 const isImage = p.color && p.color.includes('http');
                 const isSelected = selection.includes(p.id);
                 const el = document.createElement('div');
-                el.className = `product-item product-card relative group bg-white rounded-xl overflow-hidden cursor-pointer shadow-sm border border-slate-100 ${isSelected ? 'selected-ring' : ''}`;
+                el.className = `product-item relative group bg-white rounded-xl overflow-hidden cursor-pointer shadow-sm border border-slate-100 ${isSelected ? 'selected-ring' : ''}`;
                 el.style.animation = `fadeIn 0.6s ease-out ${idx * 0.05}s forwards`;
                 el.style.opacity = '0';
                 
