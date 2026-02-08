@@ -14,7 +14,7 @@
     <style>
         body { font-family: 'Outfit', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
         
-        /* MASONRY GRID */
+        /* Grid Masonry */
         .products-grid { 
             column-count: 2; 
             column-gap: 12px; 
@@ -29,18 +29,18 @@
             transform: translateZ(0); 
         }
         
-        /* ANIMAÇÕES */
+        /* Animações */
         .fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         
         .slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        /* CUSTOM UI */
+        /* UI Elements */
         .cart-badge { position: absolute; top: -2px; right: -2px; background: #e11d48; color: white; font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(225, 29, 72, 0.4); }
         .selected-ring { box-shadow: 0 0 0 3px #e11d48; transform: scale(0.98); }
         
-        /* SCROLLBAR */
+        /* Scrollbar */
         #cart-items::-webkit-scrollbar { width: 4px; }
         #cart-items::-webkit-scrollbar-track { background: #f1f1f1; }
         #cart-items::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -93,11 +93,11 @@
         <div id="help-popup" class="fixed bottom-6 left-4 right-4 md:left-auto md:right-8 md:w-96 z-30 hidden slide-up">
             <div class="bg-slate-900/95 backdrop-blur-md text-white p-5 rounded-2xl shadow-xl flex items-center justify-between gap-4 border border-slate-800">
                 <div class="flex-1">
-                    <p class="text-base font-bold text-rose-300 mb-1">🤔 Em dúvida no look?</p>
-                    <p class="text-sm text-slate-300 leading-snug">Selecione até 3 opções e peça ajuda para suas amigas!</p>
+                    <p class="text-lg font-bold text-rose-300 mb-1">Em dúvida?</p>
+                    <p class="text-sm text-slate-200 leading-snug">Selecione 3 looks e peça a opinião das suas amigas!</p>
                 </div>
                 <div class="flex flex-col gap-2 shrink-0">
-                    <button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-900/50">
+                    <button onclick="startSelectionMode()" class="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-lg shadow-rose-900/50">
                         Pedir Ajuda
                     </button>
                     <button onclick="closePopup()" class="text-xs text-slate-500 hover:text-white text-center">Agora não</button>
@@ -165,6 +165,17 @@
         let isVoteMode = false;
         let currentProduct = null;
         
+        // --- FUNÇÃO DE DECODIFICAÇÃO SEGURA (IMPORTANTE!) ---
+        // Essa função inverte exatamente o que o App faz com emojis e acentos
+        function decodeData(base64) {
+            const binaryString = atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return new TextDecoder().decode(bytes);
+        }
+
         window.onload = function() {
             const params = new URLSearchParams(window.location.search);
             const encoded = params.get('data');
@@ -172,25 +183,30 @@
 
             if(encoded) {
                 try {
-                    const json = decodeURIComponent(escape(atob(encoded)));
+                    // Decodifica usando a função correta para UTF-8
+                    const json = decodeData(encoded);
                     appData = JSON.parse(json);
                     
-                    // --- ATUALIZAÇÃO DOS DADOS DA LOJA ---
-                    // Garante que o nome venha do JSON
-                    const dynamicName = appData.profile.name || "Nossa Loja";
-                    document.getElementById('store-name').innerText = dynamicName;
-                    document.getElementById('store-initial').innerText = dynamicName.charAt(0).toUpperCase();
-                    document.title = dynamicName; 
+                    // --- PREENCHIMENTO DOS DADOS ---
+                    
+                    // 1. Nome da Loja (Fallback para "Loja" se vier vazio)
+                    const storeName = appData.profile.name && appData.profile.name.trim() !== "" ? appData.profile.name : "Loja Virtual";
+                    document.getElementById('store-name').textContent = storeName;
+                    document.title = `${storeName} | Coleção`;
+                    
+                    // 2. Inicial do Nome
+                    document.getElementById('store-initial').textContent = storeName.charAt(0).toUpperCase();
 
-                    // Atualiza Título e Promo
-                    document.getElementById('collection-title').innerText = appData.collection;
+                    // 3. Título da Coleção
+                    document.getElementById('collection-title').textContent = appData.collection || "Destaques";
+                    
+                    // 4. Promo
                     if(appData.config.promo_text) {
-                        const tag = document.getElementById('promo-tag');
-                        document.getElementById('promo-text').innerText = appData.config.promo_text;
-                        tag.classList.remove('hidden');
+                        document.getElementById('promo-text').textContent = appData.config.promo_text;
+                        document.getElementById('promo-tag').classList.remove('hidden');
                     }
 
-                    // Modo Amiga (Votação)
+                    // 5. Modo Votação
                     if(picks) {
                         isVoteMode = true;
                         const pickIds = picks.split(',');
@@ -205,16 +221,16 @@
                     document.getElementById('app').classList.remove('hidden');
 
                 } catch(e) { 
-                    console.error("Erro dados", e);
-                    alert("Erro ao carregar vitrine. Verifique o link.");
+                    console.error("Erro critico:", e);
+                    document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold px-10 text-center">Ops! Link corrompido ou antigo. Gere um novo link no App.</p>';
                 }
             } else {
-                document.getElementById('loading').innerHTML = '<p class="text-slate-400 text-sm">Link incompleto.</p>';
+                document.getElementById('loading').innerHTML = '<p class="text-slate-400 text-sm">Aguardando link...</p>';
             }
         };
         
         function setupVoteUI() {
-            document.getElementById('collection-title').innerText = "Ajude sua Amiga! 😍";
+            document.getElementById('collection-title').textContent = "Ajude sua Amiga! 😍";
             document.getElementById('help-popup').classList.add('hidden');
             document.querySelector('.ph-shopping-bag').classList.replace('ph-shopping-bag', 'ph-heart');
         }
@@ -230,7 +246,6 @@
                 el.style.animation = `fadeIn 0.6s ease-out ${idx * 0.05}s forwards`;
                 el.style.opacity = '0';
                 
-                // Overlay de Voto
                 const overlay = isVoteMode ? `<div class="absolute inset-0 bg-rose-900/0 hover:bg-rose-900/10 transition-colors z-10 flex items-center justify-center group-hover:opacity-100"><span class="bg-white text-rose-600 px-3 py-1 rounded-full text-xs font-bold shadow-lg transform scale-0 group-hover:scale-100 transition-transform">Votar Neste</span></div>` : '';
                 const check = isSelected ? `<div class="absolute top-2 right-2 bg-rose-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-lg z-20 animate-[bounce_0.3s]"><i class="ph-bold ph-check text-xs"></i></div>` : '';
 
@@ -328,13 +343,12 @@
             if(num.length > 8) window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
         }
         
-        // --- OUTROS ---
         function openModal(p) {
             const img = document.getElementById('modal-img');
             img.src = p.color.includes('http') ? p.color : '';
             img.style.backgroundColor = p.color.includes('http') ? 'transparent' : p.color;
-            document.getElementById('modal-title').innerText = p.name;
-            document.getElementById('modal-price').innerText = `R$ ${p.price}`;
+            document.getElementById('modal-title').textContent = p.name;
+            document.getElementById('modal-price').textContent = `R$ ${p.price}`;
             document.getElementById('product-modal').classList.remove('hidden');
         }
         function closeModal() { document.getElementById('product-modal').classList.add('hidden'); }
@@ -344,7 +358,6 @@
             isSelectionMode = true; selection = [];
             document.getElementById('help-popup').classList.add('hidden');
             document.getElementById('selection-bar').classList.remove('hidden');
-            document.getElementById('sel-count').innerText = "0";
             renderGrid();
         }
         function stopSelectionMode() {
@@ -359,7 +372,6 @@
             const btn = document.getElementById('btn-share-friend');
             btn.disabled = selection.length === 0;
             btn.classList.toggle('opacity-50', selection.length === 0);
-            btn.classList.toggle('cursor-not-allowed', selection.length === 0);
             renderGrid();
         }
         function shareWithFriend() {
