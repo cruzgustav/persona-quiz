@@ -3,162 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Minha Vitrine | Vortek</title>
+    <title>Vitrine Virtual</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 100px; /* Espaço pro botão flutuante */
+        }
+        
+        /* Ocultar Scrollbar */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* Animação de Entrada */
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Animação Suave */
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* Cores Dinâmicas (Podem vir do App) */
-        :root { --primary: #e11d48; --primary-light: #ffe4e6; }
-        .text-primary { color: var(--primary); }
-        .bg-primary { background-color: var(--primary); }
-        .bg-primary-light { background-color: var(--primary-light); }
-        .border-primary { border-color: var(--primary); }
+        /* Estilo para Imagem vs Cor */
+        .product-media {
+            width: 100%;
+            aspect-ratio: 1/1; /* Quadrado Perfeito */
+            border-radius: 16px;
+            background-size: cover;
+            background-position: center;
+            background-color: #e2e8f0;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        /* Botão Pulsante */
+        .pulse-btn { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        }
     </style>
 </head>
-<body class="pb-24">
+<body>
 
-    <header class="bg-white shadow-sm pt-8 pb-4 px-6 rounded-b-3xl relative z-10">
-        <div class="flex items-center gap-4">
-            <div class="relative">
-                <img id="profile-img" src="https://ui-avatars.com/api/?name=Loja+Demo&background=e11d48&color=fff" 
-                     class="w-16 h-16 rounded-full border-4 border-white shadow-lg object-cover">
-                <div class="absolute -bottom-1 -right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-white"></div>
-            </div>
-            <div>
-                <h1 id="store-name" class="text-xl font-bold text-slate-800 leading-tight">Carregando...</h1>
-                <p id="store-desc" class="text-sm text-slate-500">Coleção Exclusiva</p>
-            </div>
+    <div id="loading" class="p-6 space-y-4">
+        <div class="h-20 bg-slate-200 rounded-2xl animate-pulse"></div>
+        <div class="h-8 w-1/2 bg-slate-200 rounded-lg animate-pulse"></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="h-48 bg-slate-200 rounded-2xl animate-pulse"></div>
+            <div class="h-48 bg-slate-200 rounded-2xl animate-pulse"></div>
         </div>
+    </div>
+
+    <div id="app" class="hidden">
         
-        <div id="promo-banner" class="hidden mt-4 bg-primary-light py-2 px-4 rounded-lg flex items-center gap-2">
-            <i class="ph ph-confetti text-primary text-xl"></i>
-            <p class="text-xs font-bold text-primary">Frete Grátis acima de R$ 200</p>
-        </div>
-    </header>
-
-    <main class="px-4 mt-6">
-        <div class="flex justify-between items-end mb-4 px-2">
-            <div>
-                <span class="text-xs font-bold tracking-widest text-slate-400 uppercase">Coleção</span>
-                <h2 id="collection-title" class="text-2xl font-black text-slate-800">Destaques</h2>
+        <header class="bg-white px-6 pt-8 pb-6 rounded-b-3xl shadow-sm border-b border-slate-100 relative z-10">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs font-bold text-indigo-600 tracking-widest uppercase bg-indigo-50 px-2 py-1 rounded-md mb-2 inline-block">Coleção Exclusiva</span>
+                    <h1 id="collection-title" class="text-3xl font-black text-slate-900 leading-tight tracking-tight">...</h1>
+                    <div class="flex items-center gap-2 mt-2 text-slate-500">
+                        <i class="ph-fill ph-storefront"></i>
+                        <span id="store-name" class="font-medium text-sm">...</span>
+                    </div>
+                </div>
+                <div id="store-avatar" class="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
+                    L
+                </div>
             </div>
-            <span id="item-count" class="text-xs font-bold bg-slate-200 text-slate-600 px-2 py-1 rounded-md">0 itens</span>
+
+            <div id="promo-banner" class="hidden mt-6 bg-gradient-to-r from-pink-500 to-rose-500 text-white p-3 rounded-xl flex items-center justify-between shadow-lg shadow-pink-500/20">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white/20 p-1.5 rounded-lg"><i class="ph-fill ph-gift text-lg"></i></div>
+                    <span class="text-xs font-bold" id="promo-text">Frete Grátis acima de R$ 200</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-4">
+            <div id="products-grid" class="grid grid-cols-2 gap-4">
+                </div>
+        </main>
+
+        <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-200 z-50">
+            <button onclick="contactStore()" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-transform pulse-btn">
+                <i class="ph-fill ph-whatsapp-logo text-green-400 text-xl"></i>
+                Falar com Vendedora
+            </button>
         </div>
 
-        <div id="products-grid" class="grid grid-cols-2 gap-4 pb-10">
-            </div>
-    </main>
-
-    <div class="fixed bottom-6 left-0 right-0 px-6 z-50">
-        <button onclick="contactStore()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-transform">
-            <i class="ph ph-whatsapp-logo text-2xl text-green-400"></i>
-            Falar com Vendedora
-        </button>
     </div>
 
     <script>
-        // --- DADOS PADRÃO (FALLBACK) ---
-        // Isso aparece se o link não tiver dados, servindo de "Demo"
+        // Dados Padrão (Demo)
         const defaultData = {
-            profile: {
-                name: "Loja Demo",
-                desc: "Moda & Estilo",
-                avatar: "", // Se vazio, usa gerador
-                whatsapp: "5511999999999"
-            },
-            collection: "Verão 2026 ☀️",
-            config: {
-                enable_voting: true, // Função 1: Pedir Opinião
-                enable_coupon: true, // Função 2: Cupom Viral
-                promo_text: "Frete Grátis hoje!"
-            },
-            products: [
-                { id: 1, name: "Vestido Midi Floral", price: "199,90", color: "#fca5a5" },
-                { id: 2, name: "Conjunto Linho", price: "249,90", color: "#fde047" },
-                { id: 3, name: "Blusa Seda", price: "89,90", color: "#93c5fd" }
-            ]
+            profile: { name: "Loja Demo", whatsapp: "" },
+            collection: "Vitrine Exemplo",
+            config: { enable_voting: true, promo_text: "Enviamos para todo Brasil" },
+            products: []
         };
 
         let currentData = defaultData;
 
-        // --- 1. CARREGAMENTO DOS DADOS (URL PARAMS) ---
+        // --- 1. CARREGAR DADOS DA URL (Base64) ---
         function loadData() {
             const urlParams = new URLSearchParams(window.location.search);
             const encodedData = urlParams.get('data');
 
             if (encodedData) {
                 try {
-                    // Decodifica Base64 -> JSON
+                    // Decodifica Base64 -> String -> JSON
+                    // O processo inverso do App
                     const jsonString = atob(encodedData);
-                    // Decodifica caracteres especiais (UTF-8)
                     const decodedString = decodeURIComponent(escape(jsonString));
                     currentData = JSON.parse(decodedString);
                 } catch (e) {
-                    console.error("Erro ao ler dados da URL", e);
+                    console.error("Erro ao decodificar dados", e);
                 }
             }
-            renderPage();
+            
+            renderApp();
         }
 
-        // --- 2. RENDERIZAÇÃO DA PÁGINA ---
-        function renderPage() {
-            // Perfil
-            document.getElementById('store-name').innerText = currentData.profile.name;
-            document.getElementById('store-desc').innerText = currentData.profile.desc || "Vitrine Virtual";
-            if (currentData.profile.avatar) {
-                document.getElementById('profile-img').src = currentData.profile.avatar;
-            }
+        // --- 2. RENDERIZAR NA TELA ---
+        function renderApp() {
+            // Oculta loader, mostra app
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('app').classList.remove('hidden');
 
-            // Banner Config
-            if (currentData.config.promo_text) {
-                const banner = document.getElementById('promo-banner');
-                banner.classList.remove('hidden');
-                banner.querySelector('p').innerText = currentData.config.promo_text;
-            }
-
-            // Coleção
+            // Preenche Textos
             document.getElementById('collection-title').innerText = currentData.collection;
-            document.getElementById('item-count').innerText = `${currentData.products.length} itens`;
+            document.getElementById('store-name').innerText = currentData.profile.name;
+            document.getElementById('store-avatar').innerText = currentData.profile.name.charAt(0).toUpperCase();
+
+            // Promoção
+            if(currentData.config.promo_text) {
+                document.getElementById('promo-banner').classList.remove('hidden');
+                document.getElementById('promo-text').innerText = currentData.config.promo_text;
+            }
 
             // Produtos
             const grid = document.getElementById('products-grid');
             grid.innerHTML = '';
 
-            currentData.products.forEach(p => {
-                // Se a cor for Hex, usa bg-color. Se for URL, usa img.
-                const isImage = p.color && (p.color.startsWith('http') || p.color.startsWith('data:'));
-                const bgStyle = isImage ? `background-image: url('${p.color}'); background-size: cover;` : `background-color: ${p.color || '#eee'};`;
+            if(currentData.products.length === 0) {
+                grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-400">Nenhum produto nesta coleção.</div>`;
+                return;
+            }
 
-                // Botão de Votação (Se ativo na config)
+            currentData.products.forEach((p, index) => {
+                // Lógica de Imagem: É URL ou Cor Hex?
+                const isUrl = p.color && (p.color.startsWith('http') || p.color.startsWith('data:'));
+                
+                // Se for URL, usa background-image. Se for Hex, usa background-color.
+                const style = isUrl 
+                    ? `background-image: url('${p.color}');` 
+                    : `background-color: ${p.color || '#e2e8f0'};`;
+
+                // Botão de Votação (Se ativo)
                 const voteBtn = currentData.config.enable_voting ? `
-                    <button onclick="askFriend('${p.name}')" class="mt-3 w-full bg-pink-50 border border-pink-200 text-pink-600 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 active:bg-pink-100">
-                        <i class="ph ph-chat-circle-dots text-lg"></i>
+                    <button onclick="askFriend('${p.name}', '${isUrl ? p.color : ''}')" class="mt-3 w-full border border-indigo-100 bg-indigo-50 text-indigo-600 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors">
+                        <i class="ph-bold ph-chat-circle-dots text-lg"></i>
                         Pedir Opinião
                     </button>
                 ` : '';
 
+                // HTML do Card
                 const html = `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 fade-in">
-                        <div class="h-40 w-full rounded-xl mb-3 relative" style="${bgStyle} background-position: center;">
-                            <button class="absolute top-2 right-2 bg-white/80 p-1.5 rounded-full shadow-sm text-slate-400 hover:text-red-500">
-                                <i class="ph ph-heart-straight text-lg"></i>
-                            </button>
+                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 fade-in" style="animation-delay: ${index * 100}ms">
+                        <div class="product-media shadow-inner" style="${style}">
+                            ${!isUrl ? '<div class="absolute inset-0 flex items-center justify-center text-slate-400/50"><i class="ph-fill ph-image text-3xl"></i></div>' : ''}
                         </div>
-                        <h3 class="font-bold text-slate-800 text-sm leading-tight mb-1 truncate">${p.name}</h3>
-                        <p class="text-slate-500 text-xs mb-2">R$ ${p.price}</p>
+                        
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="font-bold text-slate-800 text-sm leading-tight line-clamp-2 pr-2">${p.name}</h3>
+                        </div>
+                        <p class="text-slate-500 text-xs font-medium">R$ <span class="text-slate-900 text-base font-bold">${p.price}</span></p>
                         
                         ${voteBtn}
                     </div>
@@ -167,25 +192,31 @@
             });
         }
 
-        // --- 3. FUNÇÕES VIRAIS ---
+        // --- 3. AÇÕES DO USUÁRIO ---
 
-        function askFriend(productName) {
-            // A mágica viral: Gera mensagem para amiga
-            const storeUrl = window.location.href; // Link da vitrine atual
-            const text = `Amiga, me ajuda! 😍\n\nTô muito em dúvida se levo o *${productName}*.\n\nDá uma olhada aqui e me fala o que acha:\n${storeUrl}`;
+        function askFriend(productName, productImg) {
+            // Gatilho Viral: Abre WhatsApp para enviar para uma amiga
+            const currentUrl = window.location.href;
             
-            // Abre WhatsApp Nativo
+            const text = `Amiga, me ajuda! 😍\n\nTô em dúvida se levo esse *${productName}*.\n\nDá uma olhada aqui e vota pra mim:\n${currentUrl}`;
+            
             const waLink = `https://wa.me/?text=${encodeURIComponent(text)}`;
             window.open(waLink, '_blank');
         }
 
         function contactStore() {
-            const text = `Olá! Vi a coleção *${currentData.collection}* e gostei de algumas peças.`;
-            const waLink = `https://wa.me/${currentData.profile.whatsapp}?text=${encodeURIComponent(text)}`;
-            window.open(waLink, '_blank');
+            // Contato direto com a loja
+            const phone = currentData.profile.whatsapp.replace(/\D/g,''); // Remove caracteres não numéricos
+            const text = `Olá! Vi a coleção *${currentData.collection}* e gostei das peças.`;
+            
+            if(phone.length > 8) {
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+            } else {
+                alert("O WhatsApp da loja não foi configurado corretamente.");
+            }
         }
 
-        // Inicia
+        // Iniciar
         window.onload = loadData;
 
     </script>
