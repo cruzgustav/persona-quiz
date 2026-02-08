@@ -3,221 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Vitrine Virtual</title>
+    <title>Vitrine</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;900&display=swap" rel="stylesheet">
     
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f8fafc; 
-            -webkit-tap-highlight-color: transparent;
-            padding-bottom: 100px; /* Espaço pro botão flutuante */
+        body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; -webkit-tap-highlight-color: transparent; }
+        
+        /* Masonry Grid (Estilo Pinterest) */
+        .masonry-grid {
+            column-count: 2;
+            column-gap: 12px;
         }
-        
-        /* Ocultar Scrollbar */
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Animação Suave */
-        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: translateY(20px); }
-        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
-
-        /* Estilo para Imagem vs Cor */
-        .product-media {
-            width: 100%;
-            aspect-ratio: 1/1; /* Quadrado Perfeito */
-            border-radius: 16px;
-            background-size: cover;
-            background-position: center;
-            background-color: #e2e8f0;
-            position: relative;
-            overflow: hidden;
+        .masonry-item {
+            break-inside: avoid;
             margin-bottom: 12px;
         }
 
-        /* Botão Pulsante */
-        .pulse-btn { animation: pulse 2s infinite; }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(79, 70, 229, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+        /* Seleção (Borda Ativa) */
+        .selected-card {
+            box-shadow: 0 0 0 3px #e11d48; /* Cor Rose */
+            transform: scale(0.98);
         }
+
+        /* Botão Flutuante Animado */
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Modal Zoom */
+        .modal-open { overflow: hidden; }
+        .backdrop-blur { backdrop-filter: blur(8px); }
     </style>
 </head>
-<body>
+<body class="pb-32">
 
-    <div id="loading" class="p-6 space-y-4">
-        <div class="h-20 bg-slate-200 rounded-2xl animate-pulse"></div>
-        <div class="h-8 w-1/2 bg-slate-200 rounded-lg animate-pulse"></div>
-        <div class="grid grid-cols-2 gap-4">
-            <div class="h-48 bg-slate-200 rounded-2xl animate-pulse"></div>
-            <div class="h-48 bg-slate-200 rounded-2xl animate-pulse"></div>
-        </div>
+    <div id="loading" class="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <div class="w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
 
-    <div id="app" class="hidden">
+    <div id="app" class="hidden opacity-0 transition-opacity duration-500">
         
-        <header class="bg-white px-6 pt-8 pb-6 rounded-b-3xl shadow-sm border-b border-slate-100 relative z-10">
-            <div class="flex justify-between items-start">
+        <header class="px-5 pt-8 pb-4 bg-white sticky top-0 z-30 bg-opacity-90 backdrop-blur-md">
+            <div class="flex items-center justify-between">
                 <div>
-                    <span class="text-xs font-bold text-indigo-600 tracking-widest uppercase bg-indigo-50 px-2 py-1 rounded-md mb-2 inline-block">Coleção Exclusiva</span>
-                    <h1 id="collection-title" class="text-3xl font-black text-slate-900 leading-tight tracking-tight">...</h1>
-                    <div class="flex items-center gap-2 mt-2 text-slate-500">
-                        <i class="ph-fill ph-storefront"></i>
-                        <span id="store-name" class="font-medium text-sm">...</span>
-                    </div>
+                    <h1 id="page-title" class="text-2xl font-black text-slate-900 leading-none">Coleção</h1>
+                    <p id="store-name" class="text-xs font-medium text-slate-400 mt-1 uppercase tracking-widest">Loja</p>
                 </div>
-                <div id="store-avatar" class="w-12 h-12 bg-slate-900 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg">
-                    L
+                <div id="selection-badge" class="hidden bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-bold">
+                    <span id="sel-count">0</span>/3 selecionados
                 </div>
             </div>
-
-            <div id="promo-banner" class="hidden mt-6 bg-gradient-to-r from-pink-500 to-rose-500 text-white p-3 rounded-xl flex items-center justify-between shadow-lg shadow-pink-500/20">
-                <div class="flex items-center gap-3">
-                    <div class="bg-white/20 p-1.5 rounded-lg"><i class="ph-fill ph-gift text-lg"></i></div>
-                    <span class="text-xs font-bold" id="promo-text">Frete Grátis acima de R$ 200</span>
-                </div>
+            
+            <div id="friend-context" class="hidden mt-4 bg-rose-50 border border-rose-100 p-4 rounded-xl">
+                <p class="text-sm text-rose-800 font-medium">
+                    👋 <span class="font-bold">Oie!</span> Sua amiga está em dúvida entre esses looks. Clique no seu favorito para ajudar!
+                </p>
             </div>
         </header>
 
-        <main class="p-4">
-            <div id="products-grid" class="grid grid-cols-2 gap-4">
+        <main class="px-3 mt-2">
+            <div id="products-grid" class="masonry-grid">
                 </div>
         </main>
 
-        <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-200 z-50">
-            <button onclick="contactStore()" class="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow-xl flex items-center justify-center gap-2 active:scale-95 transition-transform pulse-btn">
-                <i class="ph-fill ph-whatsapp-logo text-green-400 text-xl"></i>
-                Falar com Vendedora
+        <div id="action-bar" class="fixed bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-white via-white to-transparent z-40 hidden slide-up">
+            
+            <button id="btn-ask-friend" onclick="shareWithFriend()" class="w-full bg-rose-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-rose-500/30 flex items-center justify-center gap-2 active:scale-95 transition-transform">
+                <i class="ph-fill ph-chat-circle-heart text-xl"></i>
+                Pedir opinião para Amiga
+            </button>
+
+            <button id="btn-vote" class="hidden w-full bg-green-600 text-white font-bold py-4 rounded-2xl shadow-xl flex items-center justify-center gap-2">
+                <i class="ph-fill ph-check-circle text-xl"></i>
+                Votar neste Look
             </button>
         </div>
 
     </div>
 
+    <div id="product-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur" onclick="closeModal()"></div>
+        
+        <div class="absolute inset-x-0 bottom-0 top-10 bg-white rounded-t-3xl overflow-hidden flex flex-col transition-transform duration-300 transform translate-y-0">
+            <button onclick="closeModal()" class="absolute top-4 right-4 z-10 bg-black/10 p-2 rounded-full backdrop-blur-sm">
+                <i class="ph-bold ph-x text-white"></i>
+            </button>
+
+            <div class="flex-1 bg-slate-100 relative">
+                <img id="modal-img" src="" class="w-full h-full object-cover">
+            </div>
+
+            <div class="p-6 bg-white shrink-0 pb-10">
+                <div class="flex justify-between items-start mb-4">
+                    <h2 id="modal-title" class="text-2xl font-bold text-slate-900 leading-tight">Nome do Produto</h2>
+                    <span id="modal-price" class="text-lg font-bold text-slate-600">R$ 00</span>
+                </div>
+                
+                <button id="modal-select-btn" onclick="toggleSelectionFromModal()" class="w-full py-4 rounded-xl font-bold border-2 border-slate-900 text-slate-900 flex items-center justify-center gap-2">
+                    Selecionar Opção
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Dados Padrão (Demo)
-        const defaultData = {
-            profile: { name: "Loja Demo", whatsapp: "" },
-            collection: "Vitrine Exemplo",
-            config: { enable_voting: true, promo_text: "Enviamos para todo Brasil" },
-            products: []
-        };
+        let appData = {};
+        let selectedIds = [];
+        let isFriendMode = false;
+        let currentModalId = null;
 
-        let currentData = defaultData;
+        // --- 1. INICIALIZAÇÃO ---
+        function init() {
+            const params = new URLSearchParams(window.location.search);
+            const rawData = params.get('data');
+            const picks = params.get('picks'); // IDs que a amiga deve ver
 
-        // --- 1. CARREGAR DADOS DA URL (Base64) ---
-        function loadData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const encodedData = urlParams.get('data');
-
-            if (encodedData) {
+            if (rawData) {
                 try {
-                    // Decodifica Base64 -> String -> JSON
-                    // O processo inverso do App
-                    const jsonString = atob(encodedData);
-                    const decodedString = decodeURIComponent(escape(jsonString));
-                    currentData = JSON.parse(decodedString);
+                    const json = decodeURIComponent(escape(atob(rawData)));
+                    appData = JSON.parse(json);
+                    
+                    // Verifica se é "Modo Amiga"
+                    if (picks) {
+                        isFriendMode = true;
+                        const pickIds = picks.split(',');
+                        // Filtra apenas os produtos que a amiga selecionou
+                        appData.products = appData.products.filter(p => pickIds.includes(p.id.toString()));
+                        setupFriendView();
+                    } else {
+                        setupShopperView();
+                    }
+
+                    renderGrid();
+                    
+                    // Mostra App
+                    document.getElementById('loading').classList.add('hidden');
+                    const app = document.getElementById('app');
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0'), 50);
+
                 } catch (e) {
-                    console.error("Erro ao decodificar dados", e);
+                    console.error("Erro dados", e);
+                    alert("Link inválido ou expirado.");
                 }
             }
-            
-            renderApp();
         }
 
-        // --- 2. RENDERIZAR NA TELA ---
-        function renderApp() {
-            // Oculta loader, mostra app
-            document.getElementById('loading').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
+        function setupShopperView() {
+            document.getElementById('page-title').innerText = appData.collection;
+            document.getElementById('store-name').innerText = appData.profile.name;
+            document.getElementById('selection-badge').classList.remove('hidden');
+        }
 
-            // Preenche Textos
-            document.getElementById('collection-title').innerText = currentData.collection;
-            document.getElementById('store-name').innerText = currentData.profile.name;
-            document.getElementById('store-avatar').innerText = currentData.profile.name.charAt(0).toUpperCase();
+        function setupFriendView() {
+            document.getElementById('page-title').innerText = "Ajude sua Amiga";
+            document.getElementById('friend-context').classList.remove('hidden');
+            // No modo amiga, o botão de ação muda (Aparece dinamicamente ao selecionar)
+        }
 
-            // Promoção
-            if(currentData.config.promo_text) {
-                document.getElementById('promo-banner').classList.remove('hidden');
-                document.getElementById('promo-text').innerText = currentData.config.promo_text;
-            }
-
-            // Produtos
+        // --- 2. RENDERIZAÇÃO (Masonry) ---
+        function renderGrid() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = '';
 
-            if(currentData.products.length === 0) {
-                grid.innerHTML = `<div class="col-span-2 text-center py-10 text-slate-400">Nenhum produto nesta coleção.</div>`;
-                return;
-            }
-
-            currentData.products.forEach((p, index) => {
-                // Lógica de Imagem: É URL ou Cor Hex?
-                const isUrl = p.color && (p.color.startsWith('http') || p.color.startsWith('data:'));
+            appData.products.forEach(p => {
+                const isSelected = selectedIds.includes(p.id);
+                const isImage = p.color && p.color.includes('http');
                 
-                // Se for URL, usa background-image. Se for Hex, usa background-color.
-                const style = isUrl 
-                    ? `background-image: url('${p.color}');` 
-                    : `background-color: ${p.color || '#e2e8f0'};`;
+                // Card Minimalista
+                const div = document.createElement('div');
+                div.className = `masonry-item bg-white rounded-xl overflow-hidden transition-all duration-200 ${isSelected ? 'selected-card' : ''}`;
+                div.onclick = () => isFriendMode ? voteProduct(p) : openModal(p);
 
-                // Botão de Votação (Se ativo)
-                const voteBtn = currentData.config.enable_voting ? `
-                    <button onclick="askFriend('${p.name}', '${isUrl ? p.color : ''}')" class="mt-3 w-full border border-indigo-100 bg-indigo-50 text-indigo-600 py-2.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 active:bg-indigo-100 transition-colors">
-                        <i class="ph-bold ph-chat-circle-dots text-lg"></i>
-                        Pedir Opinião
-                    </button>
-                ` : '';
+                const mediaHtml = isImage 
+                    ? `<img src="${p.color}" class="w-full h-auto object-cover" loading="lazy">`
+                    : `<div class="w-full h-40" style="background-color:${p.color}"></div>`;
 
-                // HTML do Card
-                const html = `
-                    <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 fade-in" style="animation-delay: ${index * 100}ms">
-                        <div class="product-media shadow-inner" style="${style}">
-                            ${!isUrl ? '<div class="absolute inset-0 flex items-center justify-center text-slate-400/50"><i class="ph-fill ph-image text-3xl"></i></div>' : ''}
-                        </div>
-                        
-                        <div class="flex justify-between items-start mb-1">
-                            <h3 class="font-bold text-slate-800 text-sm leading-tight line-clamp-2 pr-2">${p.name}</h3>
-                        </div>
-                        <p class="text-slate-500 text-xs font-medium">R$ <span class="text-slate-900 text-base font-bold">${p.price}</span></p>
-                        
-                        ${voteBtn}
+                // Badge de Seleção (Check)
+                const checkHtml = isSelected 
+                    ? `<div class="absolute top-2 right-2 bg-rose-600 text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md"><i class="ph-bold ph-check"></i></div>`
+                    : '';
+
+                div.innerHTML = `
+                    <div class="relative">
+                        ${mediaHtml}
+                        ${!isFriendMode ? checkHtml : ''} 
+                    </div>
+                    <div class="p-3">
+                        <h3 class="font-bold text-slate-800 text-sm leading-tight mb-1">${p.name}</h3>
+                        <p class="text-xs text-slate-500 font-medium">R$ ${p.price}</p>
                     </div>
                 `;
-                grid.innerHTML += html;
+                grid.id = `card-${p.id}`;
+                grid.appendChild(div);
             });
         }
 
-        // --- 3. AÇÕES DO USUÁRIO ---
+        // --- 3. LÓGICA DE SELEÇÃO E MODAL ---
 
-        function askFriend(productName, productImg) {
-            // Gatilho Viral: Abre WhatsApp para enviar para uma amiga
-            const currentUrl = window.location.href;
+        function openModal(product) {
+            currentModalId = product.id;
             
-            const text = `Amiga, me ajuda! 😍\n\nTô em dúvida se levo esse *${productName}*.\n\nDá uma olhada aqui e vota pra mim:\n${currentUrl}`;
-            
-            const waLink = `https://wa.me/?text=${encodeURIComponent(text)}`;
-            window.open(waLink, '_blank');
+            // Preenche Modal
+            document.getElementById('modal-img').src = product.color.includes('http') ? product.color : ''; // Fallback de cor se precisar
+            document.getElementById('modal-img').style.backgroundColor = product.color;
+            document.getElementById('modal-title').innerText = product.name;
+            document.getElementById('modal-price').innerText = `R$ ${product.price}`;
+
+            // Estado do Botão no Modal
+            updateModalBtn();
+
+            document.getElementById('product-modal').classList.remove('hidden');
+            document.body.classList.add('modal-open');
         }
 
-        function contactStore() {
-            // Contato direto com a loja
-            const phone = currentData.profile.whatsapp.replace(/\D/g,''); // Remove caracteres não numéricos
-            const text = `Olá! Vi a coleção *${currentData.collection}* e gostei das peças.`;
-            
-            if(phone.length > 8) {
-                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        function closeModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+        }
+
+        function updateModalBtn() {
+            const btn = document.getElementById('modal-select-btn');
+            if (selectedIds.includes(currentModalId)) {
+                btn.innerText = "Remover da Lista";
+                btn.className = "w-full py-4 rounded-xl font-bold bg-rose-100 text-rose-700";
             } else {
-                alert("O WhatsApp da loja não foi configurado corretamente.");
+                btn.innerText = selectedIds.length >= 3 ? "Lista Cheia (Max 3)" : "Selecionar Opção";
+                btn.className = "w-full py-4 rounded-xl font-bold bg-slate-900 text-white";
+                if(selectedIds.length >= 3) btn.classList.add('opacity-50', 'cursor-not-allowed');
             }
         }
 
-        // Iniciar
-        window.onload = loadData;
+        function toggleSelectionFromModal() {
+            if (selectedIds.includes(currentModalId)) {
+                selectedIds = selectedIds.filter(id => id !== currentModalId);
+            } else {
+                if (selectedIds.length >= 3) return alert("Escolha no máximo 3 opções para mandar para sua amiga.");
+                selectedIds.push(currentModalId);
+            }
+            
+            updateModalBtn();
+            renderGrid(); // Atualiza os checks no grid
+            updateUI();
+            
+            // Feedback tátil/visual e fecha
+            setTimeout(closeModal, 200);
+        }
+
+        function updateUI() {
+            // Atualiza contador
+            document.getElementById('sel-count').innerText = selectedIds.length;
+            
+            // Mostra/Oculta Barra de Ação
+            const bar = document.getElementById('action-bar');
+            if (selectedIds.length > 0) {
+                bar.classList.remove('hidden');
+            } else {
+                bar.classList.add('hidden');
+            }
+        }
+
+        // --- 4. AÇÕES FINAIS (COMPARTILHAR E VOTAR) ---
+
+        function shareWithFriend() {
+            // Gera URL para a amiga (mantém o data original + adiciona picks)
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('picks', selectedIds.join(','));
+            
+            const friendLink = currentUrl.toString();
+            
+            const text = `Amiga, me ajuda! 😍\n\nTô em dúvida entre esses ${selectedIds.length} looks.\n\nAbre aí e vota no que você prefere:\n${friendLink}`;
+            
+            // Abre WhatsApp
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function voteProduct(product) {
+            // A amiga clica no produto para votar
+            const text = `Oie! Amei esse aqui: *${product.name}*! 😍\n\nAcho que super combina com você.`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        window.onload = init;
 
     </script>
 </body>
